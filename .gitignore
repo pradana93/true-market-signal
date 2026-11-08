@@ -52,3 +52,4 @@ coverage/
 # Cache
 .cache/
 .nyc_output/
+.vercel

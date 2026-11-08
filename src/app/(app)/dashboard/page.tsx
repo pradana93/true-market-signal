@@ -1,186 +1,278 @@
-import { Button } from '@/components/ui/button';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, AlertCircle, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, Layers, ShieldAlert, Activity } from 'lucide-react';
+import Link from 'next/link';
+
+interface SignalItem {
+  id: number;
+  instrument_id: number;
+  tf: string;
+  direction: 'long' | 'short' | 'neutral';
+  confidence: number;
+  reason: string;
+  evidence: any;
+  invalidation?: number;
+  created_at: string;
+  instrument?: {
+    id: number;
+    symbol: string;
+    market: string;
+  };
+}
 
 export default function DashboardPage() {
-  // Mock data for demonstration
-  const signals = [
-    {
-      id: '1',
-      symbol: 'BTCUSDT',
-      market: 'crypto',
-      timeframe: '1h',
-      direction: 'long',
-      confidence: 0.85,
-      reason: 'Long BTCUSDT 1h — BOS above 68,400 confirmed by footprint imbalance (3.4×), positive CVD slope, POC reclaim.',
-      methods: ['smc.bos', 'vp.poc_break', 'footprint.imbalance'],
-      invalidation: 67900,
-      created_at: new Date(Date.now() - 300000),
-    },
-    {
-      id: '2',
-      symbol: 'ETHUSDT',
-      market: 'crypto',
-      timeframe: '1h',
-      direction: 'short',
-      confidence: 0.72,
-      reason: 'Short ETHUSDT 1h — CHoCH breakdown below 3,200 confirmed by order book liquidity sweep, negative CVD divergence.',
-      methods: ['smc.choch', 'orderbook.sweep', 'cvd.divergence'],
-      invalidation: 3250,
-      created_at: new Date(Date.now() - 600000),
-    },
-    {
-      id: '3',
-      symbol: 'SPY',
-      market: 'stocks',
-      timeframe: '1d',
-      direction: 'neutral',
-      confidence: 0.45,
-      reason: 'Conflicting evidence — SMC shows bullish order block but volume profile shows rejection at VAH.',
-      methods: ['smc.order_block', 'vp.rejection'],
-      invalidation: null,
-      created_at: new Date(Date.now() - 900000),
-    },
-    {
-      id: '4',
-      symbol: 'EURUSD',
-      market: 'forex',
-      timeframe: '15m',
-      direction: 'long',
-      confidence: 0.68,
-      reason: 'Long EURUSD 15m — Premium zone breakout confirmed by tape-derived delta divergence, RSI bullish divergence.',
-      methods: ['smc.premium_zone', 'tape.delta_divergence', 'confluence.rsi_divergence'],
-      invalidation: 10850,
-      created_at: new Date(Date.now() - 1200000),
-    },
-    {
-      id: '5',
-      symbol: 'XAUUSD',
-      market: 'commodities',
-      timeframe: '1h',
-      direction: 'short',
-      confidence: 0.75,
-      reason: 'Short XAUUSD 1h — Liquidity void at 2050 confirmed by order book heatmap, bearish CVD slope.',
-      methods: ['smc.liquidity_void', 'orderbook.heatmap', 'cvd.slope'],
-      invalidation: 20650,
-      created_at: new Date(Date.now() - 1500000),
-    },
-  ];
+  const [signals, setSignals] = useState<SignalItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [marketFilter, setMarketFilter] = useState('all');
+  const [directionFilter, setDirectionFilter] = useState('all');
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchSignals = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/signals');
+      const json = await res.json();
+      if (json.error) throw new Error(json.error);
+      setSignals(json.data || []);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load signals');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSignals();
+    const interval = setInterval(fetchSignals, 30000); // Poll every 30s
+    return () => clearInterval(interval);
+  }, []);
+
+  const filteredSignals = signals.filter(s => {
+    if (marketFilter !== 'all' && s.instrument?.market !== marketFilter) return false;
+    if (directionFilter !== 'all' && s.direction !== directionFilter) return false;
+    return true;
+  });
+
+  const stats = {
+    total: signals.length,
+    longs: signals.filter(s => s.direction === 'long').length,
+    shorts: signals.filter(s => s.direction === 'short').length,
+    neutrals: signals.filter(s => s.direction === 'neutral').length,
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header & Stats Banner */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-muted/30 p-6 rounded-xl border">
         <div>
-          <h1 className="text-3xl font-bold">True Signal Board</h1>
+          <div className="flex items-center space-x-2">
+            <Activity className="h-6 w-6 text-primary animate-pulse" />
+            <h1 className="text-3xl font-bold tracking-tight">True Signal Board</h1>
+          </div>
           <p className="text-muted-foreground mt-1">
-            Real-time market signals with multi-method validation
+            Multi-method confluence engine tracking 18 instruments across crypto, equities, forex, and commodities.
           </p>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">
-            Refresh
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 bg-background px-3 py-1.5 rounded-lg border text-xs font-medium">
+            <span className="flex h-2 w-2 rounded-full bg-green-500 animate-ping" />
+            <span>Live Engine Active</span>
+          </div>
+          <Button variant="outline" size="sm" onClick={fetchSignals} disabled={loading} className="flex items-center space-x-1">
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {signals.map((signal) => (
-          <Card key={signal.id} className="hover:shadow-md transition-shadow duration-200">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-lg">{signal.symbol}</span>
-                  <Badge variant="secondary" className={getMarketColor(signal.market)}>
-                    {signal.market}
-                  </Badge>
-                </div>
-                <Badge variant="outline" className="text-xs">
-                  {signal.timeframe}
-                </Badge>
-              </div>
-              <CardTitle className="text-base mt-2">
-                <span className={getSignalColor(signal.direction)}>
-                  {signal.direction === 'long' ? <TrendingUp className="inline h-4 w-4 mr-1" /> : signal.direction === 'short' ? <TrendingDown className="inline h-4 w-4 mr-1" /> : <AlertCircle className="inline h-4 w-4 mr-1" />}
-                  {signal.direction.charAt(0).toUpperCase() + signal.direction.slice(1)}
-                </span>
-              </CardTitle>
-              <CardDescription className="text-sm mt-1">
-                {signal.reason}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between mt-2">
-                <div className="flex items-center space-x-1">
-                  <span className="text-xs text-muted-foreground">Confidence:</span>
-                  <div className="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full ${getConfidenceColor(signal.confidence)}`} 
-                      style={{ width: `${signal.confidence * 100}%` }}
-                    ></div>
-                  </div>
-                  <span className="text-xs font-medium ml-2">{Math.round(signal.confidence * 100)}%</span>
-                </div>
-                <div className="flex space-x-1">
-                  {signal.methods.slice(0, 3).map((method, i) => (
-                    <Badge key={i} variant="secondary" className="text-xs px-1 py-0.5">
-                      {method.split('.')[1]}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                <span>Updated {formatDate(signal.created_at)}</span>
-                {signal.invalidation && (
-                  <span>Invalidates below {signal.invalidation}</span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Metrics Row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="p-4 flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground font-medium uppercase">Tracked Signals</p>
+            <p className="text-2xl font-bold mt-1">{stats.total}</p>
+          </div>
+          <Layers className="h-8 w-8 text-muted-foreground/40" />
+        </Card>
+        <Card className="p-4 flex items-center justify-between border-l-4 border-l-green-500">
+          <div>
+            <p className="text-xs text-muted-foreground font-medium uppercase">Bullish Conviction</p>
+            <p className="text-2xl font-bold text-green-600 mt-1">{stats.longs}</p>
+          </div>
+          <TrendingUp className="h-8 w-8 text-green-500/40" />
+        </Card>
+        <Card className="p-4 flex items-center justify-between border-l-4 border-l-red-500">
+          <div>
+            <p className="text-xs text-muted-foreground font-medium uppercase">Bearish Conviction</p>
+            <p className="text-2xl font-bold text-red-600 mt-1">{stats.shorts}</p>
+          </div>
+          <TrendingDown className="h-8 w-8 text-red-500/40" />
+        </Card>
+        <Card className="p-4 flex items-center justify-between border-l-4 border-l-gray-400">
+          <div>
+            <p className="text-xs text-muted-foreground font-medium uppercase">Standing Aside</p>
+            <p className="text-2xl font-bold text-muted-foreground mt-1">{stats.neutrals}</p>
+          </div>
+          <ShieldAlert className="h-8 w-8 text-muted-foreground/40" />
+        </Card>
       </div>
+
+      {/* Filter Controls */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-2 border-b">
+        <div className="flex items-center space-x-2 w-full sm:w-auto">
+          <span className="text-sm font-medium text-muted-foreground">Market:</span>
+          <div className="flex flex-wrap gap-1">
+            {['all', 'crypto', 'stocks', 'forex', 'commodities', 'etfs'].map(m => (
+              <Button
+                key={m}
+                variant={marketFilter === m ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setMarketFilter(m)}
+                className="capitalize text-xs h-8 px-3"
+              >
+                {m}
+              </Button>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
+          <span className="text-sm font-medium text-muted-foreground">Direction:</span>
+          {['all', 'long', 'short', 'neutral'].map(d => (
+            <Button
+              key={d}
+              variant={directionFilter === d ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setDirectionFilter(d)}
+              className="capitalize text-xs h-8 px-3"
+            >
+              {d}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Error / Loading / Signal Grid */}
+      {error && (
+        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-600 text-sm">
+          {error}
+        </div>
+      )}
+
+      {loading && signals.length === 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <Card key={i} className="h-48 animate-pulse bg-muted/20" />
+          ))}
+        </div>
+      ) : filteredSignals.length === 0 ? (
+        <div className="text-center py-16 border rounded-xl bg-muted/10">
+          <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground/50" />
+          <h3 className="mt-4 font-semibold text-lg">No signals match filter</h3>
+          <p className="text-sm text-muted-foreground mt-1">Try resetting market or direction filters.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredSignals.map(signal => {
+            const sym = signal.instrument?.symbol || 'UNKNOWN';
+            const mkt = signal.instrument?.market || 'general';
+            const price = signal.evidence?.price;
+            const firedMethods = Object.entries(signal.evidence?.methodSignals || {})
+              .filter(([_, s]: any) => s.direction !== 'neutral')
+              .map(([id]) => id.split('.')[1]);
+
+            return (
+              <Card key={signal.id} className="hover:shadow-lg transition-all duration-200 flex flex-col justify-between border-l-4" style={{
+                borderLeftColor: signal.direction === 'long' ? '#22c55e' : signal.direction === 'short' ? '#ef4444' : '#94a3b8'
+              }}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-bold text-lg">{sym}</span>
+                      <Badge variant="secondary" className="capitalize text-xs">
+                        {mkt}
+                      </Badge>
+                    </div>
+                    <Badge variant="outline" className="font-mono text-xs uppercase">
+                      {signal.tf}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex items-center space-x-1.5">
+                      {signal.direction === 'long' ? (
+                        <TrendingUp className="h-5 w-5 text-green-500" />
+                      ) : signal.direction === 'short' ? (
+                        <TrendingDown className="h-5 w-5 text-red-500" />
+                      ) : (
+                        <AlertCircle className="h-5 w-5 text-muted-foreground" />
+                      )}
+                      <span className={`font-bold text-base capitalize ${
+                        signal.direction === 'long' ? 'text-green-600 dark:text-green-400' :
+                        signal.direction === 'short' ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'
+                      }`}>
+                        {signal.direction}
+                      </span>
+                    </div>
+                    {price && (
+                      <span className="font-mono text-sm font-semibold">
+                        ${Number(price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    )}
+                  </div>
+
+                  <CardDescription className="text-xs mt-2 line-clamp-3 leading-relaxed">
+                    {signal.reason}
+                  </CardDescription>
+                </CardHeader>
+
+                <CardContent className="pt-0 space-y-4">
+                  {/* Confidence Bar */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Confidence Confluence</span>
+                      <span className="font-semibold">{Math.round(signal.confidence * 100)}%</span>
+                    </div>
+                    <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-500 ${
+                          signal.confidence >= 0.7 ? 'bg-green-500' :
+                          signal.confidence >= 0.5 ? 'bg-yellow-500' : 'bg-orange-500'
+                        }`}
+                        style={{ width: `${signal.confidence * 100}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Fired Methods badges */}
+                  {firedMethods.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {firedMethods.slice(0, 3).map((m, i) => (
+                        <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono bg-muted text-muted-foreground">
+                          {m}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Footer metadata */}
+                  <div className="pt-2 border-t flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span>{new Date(signal.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    {signal.invalidation && (
+                      <span className="font-mono text-red-500/80">Invalidates: ${Number(signal.invalidation).toLocaleString()}</span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
-}
-
-function getMarketColor(market: string): string {
-  const colors: Record<string, string> = {
-    crypto: 'text-green-500',
-    stocks: 'text-blue-500',
-    forex: 'text-purple-500',
-    commodities: 'text-orange-500',
-    indices: 'text-indigo-500',
-    etfs: 'text-teal-500',
-  };
-  return colors[market.toLowerCase()] || 'text-gray-500';
-}
-
-function getSignalColor(direction: string): string {
-  switch (direction) {
-    case 'long':
-      return 'text-green-500';
-    case 'short':
-      return 'text-red-500';
-    case 'neutral':
-      return 'text-gray-500';
-    default:
-      return 'text-gray-500';
-  }
-}
-
-function getConfidenceColor(confidence: number): string {
-  if (confidence >= 0.8) return 'bg-green-500';
-  if (confidence >= 0.6) return 'bg-yellow-500';
-  if (confidence >= 0.4) return 'bg-orange-500';
-  return 'bg-red-500';
-}
-
-function formatDate(date: Date | string): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(date));
 }

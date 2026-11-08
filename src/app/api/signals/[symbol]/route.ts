@@ -9,50 +9,52 @@ export async function GET(
   const { symbol } = await params;
   try {
     const supabase = createClient();
-    
+
     const { searchParams } = new URL(request.url);
-    const timeframe = searchParams.get('timeframe') || '1h';
-    
-    // First get the instrument ID
+    // Optional: without it we return the latest signal across all timeframes,
+    // which is what the detail page wants (equities are scored on 1d, crypto on 1h).
+    const timeframe = searchParams.get('timeframe');
+
     const { data: instrumentData, error: instrumentError } = await supabase
       .from('instruments')
-      .select('id')
+      .select('id, symbol, market, exchange')
       .eq('symbol', symbol)
       .single();
-    
+
     if (instrumentError || !instrumentData) {
-      return NextResponse.json(
-        { error: 'Instrument not found' }, 
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Instrument not found' }, { status: 404 });
     }
-    
-    // Then get signals for this instrument
-    const { data, error } = await supabase
+
+    let query = supabase
       .from('signals')
-      .select(`
-        *,
-        instruments(symbol, market, exchange)
-      `)
+      .select('*')
       .eq('instrument_id', instrumentData.id)
-      .eq('tf', timeframe)
       .order('created_at', { ascending: false })
       .limit(10);
-    
+
+    if (timeframe) {
+      query = query.eq('tf', timeframe);
+    }
+
+    const { data, error } = await query;
+
     if (error) {
       console.error('Error fetching signals:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch signals' }, 
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to fetch signals' }, { status: 500 });
     }
-    
-    return NextResponse.json({ data });
+
+    const instrument = {
+      id: instrumentData.id,
+      symbol: instrumentData.symbol,
+      market: instrumentData.market,
+      exchange: instrumentData.exchange,
+    };
+
+    const merged = (data || []).map((s) => ({ ...s, instrument }));
+
+    return NextResponse.json({ data: merged });
   } catch (error) {
     console.error('Unexpected error in GET /api/signals/[symbol]:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
