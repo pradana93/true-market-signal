@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, Activity, Target, ShieldAlert, ArrowUpRight, ArrowDownRight, Layers } from 'lucide-react';
 import Link from 'next/link';
 import { TradePlanLadder } from '@/components/trade-plan';
+import { MarketNews } from '@/components/market-news';
 import type { TradePlan } from '@/lib/trade-levels';
 
 interface SignalItem {
@@ -197,135 +198,153 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {loading && signals.length === 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="panel h-80 animate-pulse bg-muted/30" />
-          ))}
+            {loading && signals.length === 0 ? (
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+          <div className="xl:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="panel h-80 animate-pulse bg-muted/30" />
+            ))}
+          </div>
+          <div className="xl:col-span-4">
+            <div className="panel h-[600px] animate-pulse bg-muted/30" />
+          </div>
         </div>
       ) : filteredSignals.length === 0 ? (
-        <div className="text-center py-24 panel bg-muted/5">
-          <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground/40" />
-          <h3 className="mt-4 font-semibold text-lg">No signals match filter criteria</h3>
-          <p className="text-sm text-muted-foreground mt-1">Try resetting market or bias filters to view all active readings.</p>
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+          <div className="xl:col-span-8">
+            <div className="text-center py-24 panel bg-muted/5">
+              <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground/40" />
+              <h3 className="mt-4 font-semibold text-lg">No signals match filter criteria</h3>
+              <p className="text-sm text-muted-foreground mt-1">Try resetting market or bias filters to view all active readings.</p>
+            </div>
+          </div>
+          <div className="xl:col-span-4">
+            <MarketNews limit={8} />
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredSignals.map(signal => {
-            const sym = signal.instrument?.symbol ?? '';
-            const mkt = signal.instrument?.market ?? '';
-            const price = signal.evidence?.price;
-            const plan = signal.plan;
-            const isLong = signal.direction === 'long';
-            const isShort = signal.direction === 'short';
-            const accent = isLong ? 'border-l-emerald-500' : isShort ? 'border-l-rose-500' : 'border-l-slate-400';
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+          <div className="xl:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {filteredSignals.map(signal => {
+              const sym = signal.instrument?.symbol ?? '';
+              const mkt = signal.instrument?.market ?? '';
+              const price = signal.evidence?.price;
+              const plan = signal.plan;
+              const isLong = signal.direction === 'long';
+              const isShort = signal.direction === 'short';
+              const accent = isLong ? 'border-l-emerald-500' : isShort ? 'border-l-rose-500' : 'border-l-slate-400';
 
-            const fired = Object.entries(signal.evidence?.methodSignals || {})
-              .filter(([, s]: any) => s.direction !== 'neutral')
-              .map(([id]) => id);
+              const fired = Object.entries(signal.evidence?.methodSignals || {})
+                .filter(([, s]: any) => s.direction !== 'neutral')
+                .map(([id]) => id);
 
-            return (
-              <Link key={signal.id} href={`/signals/${encodeURIComponent(sym)}`} className="group block">
-                <div className={`panel h-full border-l-4 ${accent} transition-all duration-200 hover:shadow-lg hover:border-primary/40 flex flex-col justify-between overflow-hidden bg-card`}>
-                  <div className="p-6 pb-4 space-y-4">
-                    {/* Header Row */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-0.5">
+              return (
+                <Link key={signal.id} href={`/signals/${encodeURIComponent(sym)}`} className="group block">
+                  <div className={`panel h-full border-l-4 ${accent} transition-all duration-200 hover:shadow-lg hover:border-primary/40 flex flex-col justify-between overflow-hidden bg-card`}>
+                    <div className="p-6 pb-4 space-y-4">
+                      {/* Header Row */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="space-y-0.5">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-bold text-lg tracking-tight group-hover:text-primary transition-colors">{sym}</span>
+                            <span className="text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                              {mkt}
+                            </span>
+                          </div>
+                          {price != null && (
+                            <p className="text-xs font-mono text-muted-foreground num">
+                              ${Number(price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <Badge variant="outline" className="font-mono text-[10px] uppercase">
+                            {signal.tf}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* Direction & Confidence */}
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border">
                         <div className="flex items-center space-x-2">
-                          <span className="font-bold text-lg tracking-tight group-hover:text-primary transition-colors">{sym}</span>
-                          <span className="text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded bg-muted text-muted-foreground">
-                            {mkt}
-                          </span>
+                          {isLong ? (
+                            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                              <TrendingUp className="h-4 w-4" />
+                            </div>
+                          ) : isShort ? (
+                            <div className="w-7 h-7 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-600 dark:text-rose-400">
+                              <TrendingDown className="h-4 w-4" />
+                            </div>
+                          ) : (
+                            <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
+                              <AlertCircle className="h-4 w-4" />
+                            </div>
+                          )}
+                          <div>
+                            <span className={`text-sm font-bold capitalize block leading-none ${
+                              isLong ? 'text-emerald-600 dark:text-emerald-400'
+                                : isShort ? 'text-rose-600 dark:text-rose-400'
+                                : 'text-muted-foreground'
+                            }`}>
+                              {signal.direction}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground mt-0.5 block">
+                              {Math.round(signal.confidence * 100)}% Confluence
+                            </span>
+                          </div>
                         </div>
-                        {price != null && (
-                          <p className="text-xs font-mono text-muted-foreground num">
-                            ${Number(price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <Badge variant="outline" className="font-mono text-[10px] uppercase">
-                          {signal.tf}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {/* Direction & Confidence */}
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border">
-                      <div className="flex items-center space-x-2">
-                        {isLong ? (
-                          <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                            <TrendingUp className="h-4 w-4" />
+                        <div className="w-24">
+                          <div className="score-track">
+                            <div
+                              className={`score-fill ${
+                                isLong ? 'bg-emerald-500' : isShort ? 'bg-rose-500' : 'bg-slate-400'
+                              }`}
+                              style={{ width: `${signal.confidence * 100}%` }}
+                            />
                           </div>
-                        ) : isShort ? (
-                          <div className="w-7 h-7 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-600 dark:text-rose-400">
-                            <TrendingDown className="h-4 w-4" />
-                          </div>
-                        ) : (
-                          <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
-                            <AlertCircle className="h-4 w-4" />
-                          </div>
-                        )}
-                        <div>
-                          <span className={`text-sm font-bold capitalize block leading-none ${
-                            isLong ? 'text-emerald-600 dark:text-emerald-400'
-                              : isShort ? 'text-rose-600 dark:text-rose-400'
-                              : 'text-muted-foreground'
-                          }`}>
-                            {signal.direction}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground mt-0.5 block">
-                            {Math.round(signal.confidence * 100)}% Confluence
-                          </span>
                         </div>
                       </div>
-                      <div className="w-24">
-                        <div className="score-track">
-                          <div
-                            className={`score-fill ${
-                              isLong ? 'bg-emerald-500' : isShort ? 'bg-rose-500' : 'bg-slate-400'
-                            }`}
-                            style={{ width: `${signal.confidence * 100}%` }}
-                          />
+
+                      {/* Reason */}
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                        {signal.reason}
+                      </p>
+
+                      {/* Trade Plan Matrix (TP / SL) */}
+                      {plan ? (
+                        <TradePlanLadder plan={plan} bias={signal.direction} variant="compact" />
+                      ) : (
+                        <div className="pt-2 border-t border-border/60 text-center py-2">
+                          <span className="text-xs text-muted-foreground italic">Standing aside — no active trade plan</span>
                         </div>
-                      </div>
-                    </div>
-
-                    {/* Reason */}
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                      {signal.reason}
-                    </p>
-
-                    {/* Trade Plan Matrix (TP / SL) */}
-                    {plan ? (
-                      <TradePlanLadder plan={plan} bias={signal.direction} variant="compact" />
-                    ) : (
-                      <div className="pt-2 border-t border-border/60 text-center py-2">
-                        <span className="text-xs text-muted-foreground italic">Standing aside — no active trade plan</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Footer Methods & Action */}
-                  <div className="px-6 py-3 bg-muted/20 border-t flex items-center justify-between text-xs">
-                    <div className="flex flex-wrap gap-1">
-                      {fired.slice(0, 2).map(m => (
-                        <span key={m} className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-muted text-muted-foreground">
-                          {m.split('.')[1]}
-                        </span>
-                      ))}
-                      {fired.length > 2 && (
-                        <span className="text-[10px] text-muted-foreground self-center">+{fired.length - 2}</span>
                       )}
                     </div>
-                    <span className="font-medium text-primary flex items-center group-hover:translate-x-0.5 transition-transform">
-                      Inspect Matrix →
-                    </span>
+
+                    {/* Footer Methods & Action */}
+                    <div className="px-6 py-3 bg-muted/20 border-t flex items-center justify-between text-xs">
+                      <div className="flex flex-wrap gap-1">
+                        {fired.slice(0, 2).map(m => (
+                          <span key={m} className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-muted text-muted-foreground">
+                            {m.split('.')[1]}
+                          </span>
+                        ))}
+                        {fired.length > 2 && (
+                          <span className="text-[10px] text-muted-foreground self-center">+{fired.length - 2}</span>
+                        )}
+                      </div>
+                      <span className="font-medium text-primary flex items-center group-hover:translate-x-0.5 transition-transform">
+                        Inspect Matrix →
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            );
-          })}
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="xl:col-span-4 sticky top-20">
+            <MarketNews limit={10} />
+          </div>
         </div>
       )}
     </div>

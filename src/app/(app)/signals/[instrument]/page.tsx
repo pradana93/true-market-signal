@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, ArrowLeft, ShieldAlert, Activity, ArrowUpRight, ArrowDownRight, Target, Minus, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { TradePlanLadder } from '@/components/trade-plan';
+import { MarketNews } from '@/components/market-news';
 import { TradePlan } from '@/lib/trade-levels';
 
 interface MethodSignal {
@@ -333,6 +334,9 @@ export default function SignalDetailPage() {
           </div>
         </CardContent>
       </div>
+
+      {/* Symbol News Wire */}
+      <MarketNews variant="symbol" symbol={instrument} limit={6} />
     </div>
   );
 }
