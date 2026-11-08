@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { planFromSignal } from '@/lib/trade-levels';
 
 // GET /api/signals/[symbol] - Get signals for specific instrument
 export async function GET(
@@ -50,7 +51,11 @@ export async function GET(
       exchange: instrumentData.exchange,
     };
 
-    const merged = (data || []).map((s) => ({ ...s, instrument }));
+    const merged = (data || []).map((s) => ({
+      ...s,
+      instrument,
+      plan: planFromSignal(s),
+    }));
 
     return NextResponse.json({ data: merged });
   } catch (error) {

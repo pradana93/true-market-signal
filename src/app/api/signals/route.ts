@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { planFromSignal } from '@/lib/trade-levels';
 
 // GET /api/signals - Get latest signals
 export async function GET(request: NextRequest) {
@@ -89,6 +90,9 @@ export async function GET(request: NextRequest) {
       .map(signal => ({
         ...signal,
         instrument: instrumentsMap.get(signal.instrument_id),
+        // Stop loss and TP1/TP2/TP3, derived from this signal's own ATR,
+        // invalidation and regime. Null when the signal stands aside.
+        plan: planFromSignal(signal),
       }))
       // Drop rows whose instrument was deleted, so the UI never renders UNKNOWN.
       .filter(s => s.instrument)
