@@ -191,7 +191,7 @@ export default function SignalDetailPage() {
                   <span className="text-muted-foreground">Regime:</span>
                   <span className="font-medium capitalize">{regime.regime}</span>
                   {regime.evidence?.adx != null && (
-                    <span className="text-xs text-muted-foreground px-2 py-0.5 rounded bg-muted font-mono">
+                    <span className="text-body-sm text-muted-foreground px-2 py-0.5 rounded bg-muted font-mono">
                       ADX {Number(regime.evidence.adx).toFixed(0)}
                     </span>
                   )}

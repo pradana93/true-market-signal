@@ -104,15 +104,15 @@ export default function AlertsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-xs text-muted-foreground font-medium uppercase">Active Alerts</p>
+          <p className="text-body-sm text-muted-foreground font-medium uppercase">Active Alerts</p>
           <p className="text-2xl font-bold mt-1">{totalWatch}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-xs text-muted-foreground font-medium uppercase">High Conviction</p>
+          <p className="text-body-sm text-muted-foreground font-medium uppercase">High Conviction</p>
           <p className="text-2xl font-bold mt-1 text-green-600">{highConviction.length}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-xs text-muted-foreground font-medium uppercase">At Invalidation</p>
+          <p className="text-body-sm text-muted-foreground font-medium uppercase">At Invalidation</p>
           <p className="text-2xl font-bold mt-1 text-red-600">{nearInvalidation.length}</p>
         </Card>
       </div>
@@ -141,10 +141,10 @@ export default function AlertsPage() {
                     <div>
                       <div className="flex items-center space-x-2">
                         <span className="font-semibold">{s.instrument?.symbol}</span>
-                        <Badge variant="secondary" className="capitalize text-xs">{s.instrument?.market}</Badge>
-                        <Badge variant="outline" className="text-xs font-mono uppercase">{s.tf}</Badge>
+                        <Badge variant="secondary" className="capitalize text-body-sm">{s.instrument?.market}</Badge>
+                        <Badge variant="outline" className="text-body-sm font-mono uppercase">{s.tf}</Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">{s.reason}</p>
+                      <p className="text-body-sm text-muted-foreground mt-1">{s.reason}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
@@ -152,7 +152,7 @@ export default function AlertsPage() {
                       <p className={`text-sm font-semibold capitalize ${
                         s.direction === 'long' ? 'text-green-600' : 'text-red-600'
                       }`}>{s.direction}</p>
-                      <p className="text-xs text-muted-foreground">{Math.round(s.confidence * 100)}% confidence</p>
+                      <p className="text-body-sm text-muted-foreground">{Math.round(s.confidence * 100)}% confidence</p>
                     </div>
                     {s.direction === 'long' ? (
                       <TrendingUp className="h-6 w-6 text-green-500" />
@@ -174,15 +174,15 @@ export default function AlertsPage() {
                     <div>
                       <div className="flex items-center space-x-2">
                         <span className="font-semibold">{s.instrument?.symbol}</span>
-                        <Badge variant="secondary" className="capitalize text-xs">{s.instrument?.market}</Badge>
+                        <Badge variant="secondary" className="capitalize text-body-sm">{s.instrument?.market}</Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-body-sm text-muted-foreground mt-1">
                         Price ${Number(s.evidence?.price).toLocaleString()} within 0.5% of invalidation ${Number(s.invalidation).toLocaleString()}
                       </p>
                     </div>
                   </div>
                   <Link href={`/signals/${encodeURIComponent(s.instrument?.symbol || '')}`}>
-                    <Button variant="outline" size="sm" className="text-xs">Inspect</Button>
+                    <Button variant="outline" size="sm" className="text-body-sm">Inspect</Button>
                   </Link>
                 </div>
               </CardContent>
@@ -197,7 +197,7 @@ export default function AlertsPage() {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
             <span>Custom alerts require sign-in</span>
           </CardTitle>
-          <CardDescription className="text-xs">
+          <CardDescription className="text-body-sm">
             User-defined price and technical alerts are stored per account and are not shown here.
             The conditions above are derived from live engine state and are available without an account.
           </CardDescription>

@@ -73,40 +73,40 @@ export function TradePlanLadder({
             <Target className="h-3 w-3 text-primary" />
             Plan: TP/SL
           </span>
-          <span className="font-mono text-[10px] text-primary">{fmtR(maxR)} Max</span>
+          <span className="font-mono text-body-sm text-primary">{fmtR(maxR)} Max</span>
         </div>
 
         <div className="grid grid-cols-4 gap-1.5">
           <div className="p-1.5 rounded bg-muted/60 border border-border/40 text-center">
-            <span className="text-[9px] uppercase tracking-wider text-muted-foreground block font-medium">TP1</span>
-            <span className="text-xs font-mono font-semibold num block mt-0.5 text-emerald-600 dark:text-emerald-400">
+            <span className="text-body-sm uppercase tracking-wider text-muted-foreground block font-medium">TP1</span>
+            <span className="text-body-sm font-mono font-semibold num block mt-0.5 text-emerald-600 dark:text-emerald-400">
               ${fp(targets[0].price)}
             </span>
-            <span className="text-[9px] font-mono text-muted-foreground">+{fmtR(targets[0].rMultiple!)}</span>
+            <span className="text-body-sm font-mono text-muted-foreground">+{fmtR(targets[0].rMultiple!)}</span>
           </div>
 
           <div className="p-1.5 rounded bg-muted/60 border border-border/40 text-center">
-            <span className="text-[9px] uppercase tracking-wider text-muted-foreground block font-medium">TP2</span>
-            <span className="text-xs font-mono font-semibold num block mt-0.5 text-emerald-600 dark:text-emerald-400">
+            <span className="text-body-sm uppercase tracking-wider text-muted-foreground block font-medium">TP2</span>
+            <span className="text-body-sm font-mono font-semibold num block mt-0.5 text-emerald-600 dark:text-emerald-400">
               ${fp(targets[1].price)}
             </span>
-            <span className="text-[9px] font-mono text-muted-foreground">+{fmtR(targets[1].rMultiple!)}</span>
+            <span className="text-body-sm font-mono text-muted-foreground">+{fmtR(targets[1].rMultiple!)}</span>
           </div>
 
           <div className="p-1.5 rounded bg-muted/60 border border-border/40 text-center">
-            <span className="text-[9px] uppercase tracking-wider text-muted-foreground block font-medium">TP3</span>
-            <span className="text-xs font-mono font-semibold num block mt-0.5 text-emerald-600 dark:text-emerald-400">
+            <span className="text-body-sm uppercase tracking-wider text-muted-foreground block font-medium">TP3</span>
+            <span className="text-body-sm font-mono font-semibold num block mt-0.5 text-emerald-600 dark:text-emerald-400">
               ${fp(targets[2].price)}
             </span>
-            <span className="text-[9px] font-mono text-muted-foreground">+{fmtR(targets[2].rMultiple!)}</span>
+            <span className="text-body-sm font-mono text-muted-foreground">+{fmtR(targets[2].rMultiple!)}</span>
           </div>
 
           <div className="p-1.5 rounded bg-rose-500/5 border border-rose-500/20 text-center">
-            <span className="text-[9px] uppercase tracking-wider text-rose-600 dark:text-rose-400 block font-medium">SL</span>
-            <span className="text-xs font-mono font-semibold num block mt-0.5 text-rose-600 dark:text-rose-400">
+            <span className="text-body-sm uppercase tracking-wider text-rose-600 dark:text-rose-400 block font-medium">SL</span>
+            <span className="text-body-sm font-mono font-semibold num block mt-0.5 text-rose-600 dark:text-rose-400">
               ${fp(stop.price)}
             </span>
-            <span className="text-[9px] font-mono text-rose-600/80">-{riskPct.toFixed(1)}%</span>
+            <span className="text-body-sm font-mono text-rose-600/80">-{riskPct.toFixed(1)}%</span>
           </div>
         </div>
       </div>
