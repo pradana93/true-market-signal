@@ -15,16 +15,12 @@ export async function GET(request: NextRequest) {
     
     let query = supabase
       .from('signals')
-      .select(`
-        *,
-        instruments(symbol, market)
-      `)
+      .select('*')
       .order('created_at', { ascending: false })
       .limit(50);
     
-    // Apply filters
     if (market) {
-      query = query.eq('instruments.market', market);
+      // This filter needs to be applied after fetching instruments
     }
     
     if (timeframe) {
@@ -42,17 +38,39 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    const { data, error } = await query;
+    const { data: signals, error } = await query;
     
     if (error) {
       console.error('Error fetching signals:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch signals' }, 
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to fetch signals' }, { status: 500 });
     }
     
-    return NextResponse.json({ data });
+    if (!signals || signals.length === 0) {
+      return NextResponse.json({ data: [] });
+    }
+
+    const instrumentIds = [...new Set(signals.map(s => s.instrument_id))];
+    const { data: instruments, error: instrumentError } = await supabase
+      .from('instruments')
+      .select('id, symbol, market')
+      .in('id', instrumentIds);
+
+    if (instrumentError) {
+      console.error('Error fetching instruments:', instrumentError);
+      return NextResponse.json({ error: 'Failed to fetch instruments' }, { status: 500 });
+    }
+
+    const instrumentsMap = new Map(instruments.map(i => [i.id, i]));
+
+    const mergedData = signals.map(signal => ({
+      ...signal,
+      instrument: instrumentsMap.get(signal.instrument_id)
+    }));
+
+    // Now apply market filter if present
+    const filteredData = market ? mergedData.filter(item => item.instrument?.market === market) : mergedData;
+
+    return NextResponse.json({ data: filteredData });
   } catch (error) {
     console.error('Unexpected error in GET /api/signals:', error);
     return NextResponse.json(
