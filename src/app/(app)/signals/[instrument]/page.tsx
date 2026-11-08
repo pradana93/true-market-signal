@@ -120,29 +120,29 @@ export default function SignalDetailPage() {
       <div className="flex items-center justify-between relative z-10">
         <div className="flex items-center space-x-3">
           <Link href="/dashboard">
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-muted/50">
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-muted/50 mobile-touch-target">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
-              <span className="text-2xl font-bold tracking-tight">{signal.instrument?.symbol}</span>
-              <Badge variant="secondary" className="capitalize text-xs">{signal.instrument?.market}</Badge>
-              <Badge variant="outline" className="font-mono uppercase text-[10px]">{signal.tf}</Badge>
+              <span className="text-display-1 font-bold tracking-tight">{signal.instrument?.symbol}</span>
+              <Badge variant="secondary" className="capitalize text-body-sm">{signal.instrument?.market}</Badge>
+              <Badge variant="outline" className="font-mono uppercase text-body-sm">{signal.tf}</Badge>
             </div>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-body-md">
               Full evidence trail for the latest {signal.tf} reading
             </p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchSignal} disabled={loading} className="h-9 px-4 shadow-sm">
+        <Button variant="outline" size="sm" onClick={fetchSignal} disabled={loading} className="h-9 px-4 shadow-sm mobile-touch-target">
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </div>
 
       {/* Verdict Card — Premium */}
-      <div className="panel relative overflow-hidden" style={{ borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: isLong ? 'hsl(var(--bull))' : isShort ? 'hsl(var(--bear))' : 'hsl(var(--neutral))' }}>
+      <div className="panel relative overflow-hidden mobile-card premium-shadow premium-transition" style={{ borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: isLong ? 'hsl(var(--bull))' : isShort ? 'hsl(var(--bear))' : 'hsl(var(--neutral))' }}>
         <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-emerald-500/5 via-transparent to-rose-500/5 rounded-full blur-3xl pointer-events-none" />
 
         <CardHeader className="p-6 pb-4 space-y-5 relative z-10">
@@ -150,12 +150,12 @@ export default function SignalDetailPage() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <div className="flex items-center space-x-2 flex-wrap">
-                <span className="font-semibold text-xl tracking-tight">{signal.instrument?.symbol}</span>
-                <Badge variant="secondary" className="capitalize">{signal.instrument?.market}</Badge>
-                <Badge variant="outline" className="font-mono uppercase text-[10px]">{signal.tf}</Badge>
+                <span className="font-semibold text-h1 tracking-tight">{signal.instrument?.symbol}</span>
+                <Badge variant="secondary" className="capitalize text-body-sm">{signal.instrument?.market}</Badge>
+                <Badge variant="outline" className="font-mono uppercase text-body-sm">{signal.tf}</Badge>
               </div>
               {price != null && (
-                <p className="text-sm font-mono text-muted-foreground num">
+                <p className="text-body-md font-mono text-muted-foreground num">
                   ${Number(price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               )}
@@ -169,7 +169,7 @@ export default function SignalDetailPage() {
                 {isLong ? <TrendingUp className="h-7 w-7" /> : isShort ? <TrendingDown className="h-7 w-7" /> : <AlertCircle className="h-7 w-7" />}
               </div>
               <div className="space-y-1">
-                <span className="font-bold text-lg capitalize">{signal.direction}</span>
+                <span className="font-bold text-h2 capitalize">{signal.direction}</span>
                 <div className="flex items-center space-x-3">
                   <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
                     <div
@@ -179,14 +179,14 @@ export default function SignalDetailPage() {
                       style={{ width: `${signal.confidence * 100}%` }}
                     />
                   </div>
-                  <span className="text-sm font-semibold num whitespace-nowrap">{Math.round(signal.confidence * 100)}%</span>
+                  <span className="text-body-md font-semibold num whitespace-nowrap">{Math.round(signal.confidence * 100)}%</span>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
               {regime?.regime && (
-                <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-muted/60 border border-border/40">
+                <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-muted/60 border border-border/40 mobile-touch-target">
                   <Activity className="h-3.5 w-3.5 text-muted-foreground" />
                   <span className="text-muted-foreground">Regime:</span>
                   <span className="font-medium capitalize">{regime.regime}</span>
@@ -198,19 +198,19 @@ export default function SignalDetailPage() {
                 </div>
               )}
               {atr != null && (
-                <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-muted/60 border border-border/40">
+                <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-muted/60 border border-border/40 mobile-touch-target">
                   <span className="text-muted-foreground">ATR:</span>
                   <span className="font-mono font-semibold num">{Number(atr).toFixed(2)}</span>
                 </div>
               )}
               {signal.invalidation != null && (
-                <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-rose-500/5 border border-rose-500/20">
+                <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-rose-500/5 border border-rose-500/20 mobile-touch-target">
                   <ShieldAlert className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
                   <span className="text-muted-foreground">Invalidation:</span>
                   <span className="font-mono num text-rose-600 dark:text-rose-400">${Number(signal.invalidation).toLocaleString()}</span>
                 </div>
               )}
-              <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-muted/60 border border-border/40">
+              <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-muted/60 border border-border/40 mobile-touch-target">
                 <span className="text-muted-foreground">Corroboration:</span>
                 <span className="font-medium">{corroboratingLong}L / {corroboratingShort}S</span>
               </div>
@@ -219,7 +219,7 @@ export default function SignalDetailPage() {
 
           {/* Reason */}
           <div className="p-4 rounded-lg bg-muted/40 border">
-            <p className="text-sm leading-relaxed text-muted-foreground">{signal.reason}</p>
+            <p className="text-body-md leading-relaxed text-muted-foreground">{signal.reason}</p>
           </div>
         </CardHeader>
 
@@ -230,17 +230,17 @@ export default function SignalDetailPage() {
       </div>
 
       {/* Fired Methods */}
-      <div className="panel">
+      <div className="panel mobile-card premium-shadow premium-transition">
         <CardHeader className="p-6 pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base">Methods That Fired ({fired.length})</CardTitle>
-              <CardDescription className="text-xs">
+              <CardTitle className="text-h3">Methods That Fired ({fired.length})</CardTitle>
+              <CardDescription className="text-body-sm">
                 Only methods that found a pattern are listed. Neutral readings are abstentions and do not vote.
               </CardDescription>
             </div>
             {fired.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="text-body-sm">
                 {fired.length} active
               </Badge>
             )}
@@ -252,7 +252,7 @@ export default function SignalDetailPage() {
               <div className="w-16 h-16 mx-auto rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground mb-3">
                 <ShieldAlert className="h-8 w-8" />
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-body-md text-muted-foreground">
                 No method found a pattern. The engine is standing aside rather than guessing.
               </p>
             </div>
@@ -261,7 +261,7 @@ export default function SignalDetailPage() {
               {fired.map(([id, m]) => {
                 const isMethodLong = m.direction === 'long';
                 return (
-                  <div key={id} className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border transition-colors hover:bg-muted/60">
+                  <div key={id} className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border transition-colors hover:bg-muted/60 mobile-touch-target">
                     <div className="flex items-center space-x-3">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                         isMethodLong ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
@@ -269,20 +269,20 @@ export default function SignalDetailPage() {
                         {isMethodLong ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                       </div>
                       <div className="space-y-0.5">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 flex-wrap">
                           <span className={`font-medium capitalize ${isMethodLong ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                             {m.direction}
                           </span>
-                          <span className="font-mono text-xs text-muted-foreground">{id}</span>
+                          <span className="font-mono text-body-sm text-muted-foreground">{id}</span>
                           {weights[id] != null && (
-                            <span className="text-[10px] font-mono text-muted-foreground px-1.5 py-0.5 rounded bg-muted">w={weights[id]}</span>
+                            <span className="text-body-sm font-mono text-muted-foreground px-1.5 py-0.5 rounded bg-muted">w={weights[id]}</span>
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground max-w-md line-clamp-1">{m.reason}</p>
+                        <p className="text-body-sm text-muted-foreground max-w-md line-clamp-1">{m.reason}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3 text-right">
-                      <span className="font-mono text-xs font-semibold text-muted-foreground hidden sm:block">{Math.round(m.confidence * 100)}%</span>
+                      <span className="font-mono text-body-md font-semibold text-muted-foreground hidden sm:block">{Math.round(m.confidence * 100)}%</span>
                     </div>
                   </div>
                 );
@@ -293,18 +293,18 @@ export default function SignalDetailPage() {
       </div>
 
       {/* Full Method Table */}
-      <div className="panel">
+      <div className="panel mobile-card premium-shadow">
         <CardHeader className="p-6 pb-4">
-          <CardTitle className="text-base">All Method Readings</CardTitle>
-          <CardDescription className="text-xs">
+          <CardTitle className="text-h3">All Method Readings</CardTitle>
+          <CardDescription className="text-body-sm">
             The complete evidence set, including abstentions. This is what the fusion layer saw.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6 pt-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-body-sm">
               <thead>
-                <tr className="border-b text-left text-xs text-muted-foreground uppercase">
+                <tr className="border-b text-left text-body-sm text-muted-foreground uppercase">
                   <th className="py-3 pr-4 font-medium">Method</th>
                   <th className="py-3 pr-4 font-medium">Direction</th>
                   <th className="py-3 pr-4 font-medium">Confidence</th>
@@ -318,14 +318,14 @@ export default function SignalDetailPage() {
                   const isMethodShort = m.direction === 'short';
                   return (
                     <tr key={id} className="border-b last:border-0 hover:bg-muted/40 transition-colors">
-                      <td className="py-3 pr-4 font-mono text-xs">{id}</td>
+                      <td className="py-3 pr-4 font-mono text-body-sm">{id}</td>
                       <td className={`py-3 pr-4 capitalize ${
                         isMethodLong ? 'text-emerald-600 dark:text-emerald-400' :
                         isMethodShort ? 'text-rose-600 dark:text-rose-400' : 'text-muted-foreground'
                       }`}>{m.direction}</td>
-                      <td className="py-3 pr-4 font-mono text-xs">{Math.round(m.confidence * 100)}%</td>
-                      <td className="py-3 pr-4 font-mono text-xs text-muted-foreground">{weights[id] ?? '—'}</td>
-                      <td className="py-3 text-xs text-muted-foreground">{m.reason}</td>
+                      <td className="py-3 pr-4 font-mono text-body-sm">{Math.round(m.confidence * 100)}%</td>
+                      <td className="py-3 pr-4 font-mono text-body-sm text-muted-foreground">{weights[id] ?? '—'}</td>
+                      <td className="py-3 text-body-sm text-muted-foreground">{m.reason}</td>
                     </tr>
                   );
                 })}

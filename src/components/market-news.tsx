@@ -118,6 +118,7 @@ function ArticleCard({
     <article
       className={cn(
         'group relative rounded-xl border bg-card transition-all duration-200 hover:border-primary/30 hover:shadow-lg',
+        'mobile-card premium-shadow premium-border',
         variant === 'panel' && isFeatured && 'p-5',
         variant === 'panel' && !isFeatured && 'p-3',
         variant === 'compact' && 'p-2.5',
@@ -137,16 +138,16 @@ function ArticleCard({
 
       <div className={cn('flex flex-col gap-2', showImage && 'relative z-10')}>
         {/* Header: source · time · category */}
-        <div className="flex items-center justify-between gap-2 text-[10px]">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <span className="font-medium">{article.source}</span>
+        <div className="flex items-center justify-between gap-2 text-body-sm text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <span className="font-medium text-foreground">{article.source}</span>
             <span aria-hidden="true">·</span>
             <span><Clock className="h-3 w-3 inline" /> {timeAgo(article.publishedAt)}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Badge
               variant="outline"
-              className="text-[9px] font-mono h-4 px-2 gap-1"
+              className="text-body-sm font-mono h-5 px-2 gap-1 mobile-touch-target"
               style={{ borderColor: 'hsl(var(--border))' }}
             >
               {CATEGORY_ICONS[cat]}
@@ -162,35 +163,35 @@ function ArticleCard({
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
-            'font-semibold leading-tight transition-colors hover:text-primary',
-            isFeatured ? 'text-lg' : 'text-sm'
+            'font-semibold leading-tight transition-colors hover:text-primary mobile-touch-target',
+            isFeatured ? 'text-h2' : 'text-h3'
           )}
         >
           {article.headline}
-          <ExternalLink className="h-3 w-3 inline-block ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <ExternalLink className="h-3.5 w-3.5 inline-block ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
         </a>
 
         {/* Summary — panel/symbol only, truncated */} 
         {(variant === 'panel' || variant === 'symbol') && (
-          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed group-hover:text-foreground/80 transition-colors">
+          <p className="text-body-sm text-muted-foreground line-clamp-2 leading-relaxed group-hover:text-foreground/80 transition-colors">
             {article.summary}
           </p>
         )}
 
         {/* Symbol chips — visible on panel/symbol */} 
         {article.symbols.length > 0 && (variant === 'panel' || variant === 'symbol') && (
-          <div className="flex flex-wrap gap-1 pt-1">
+          <div className="flex flex-wrap gap-1.5 pt-1">
             {article.symbols.slice(0, 4).map((sym) => (
               <Badge
                 key={sym}
                 variant="secondary"
-                className="text-[9px] font-mono h-4 px-2"
+                className="text-body-sm font-mono h-5 px-2 mobile-touch-target"
               >
                 {sym}
               </Badge>
             ))}
             {article.symbols.length > 4 && (
-              <Badge variant="outline" className="text-[9px] font-mono h-4 px-2 text-muted-foreground">
+              <Badge variant="outline" className="text-body-sm font-mono h-5 px-2 text-muted-foreground mobile-touch-target">
                 +{article.symbols.length - 4}
               </Badge>
             )}
@@ -199,14 +200,14 @@ function ArticleCard({
 
         {/* Drivers — transparent evidence */} 
         {article.drivers.length > 0 && variant !== 'compact' && (
-          <details className="group text-[10px] text-muted-foreground">
-            <summary className="flex items-center gap-1 cursor-pointer select-none">
+          <details className="group text-body-sm text-muted-foreground">
+            <summary className="flex items-center gap-1 cursor-pointer select-none py-1">
               <span className="opacity-60 group-hover:opacity-100">Drivers:</span>
               <ChevronRight className="h-3 w-3 transition-transform group-open:rotate-90" />
             </summary>
-            <div className="mt-1 flex flex-wrap gap-1">
+            <div className="mt-1 flex flex-wrap gap-1.5">
               {article.drivers.map((d) => (
-                <Badge key={d} variant="outline" className="h-4 px-2 text-[9px] font-mono">
+                <Badge key={d} variant="outline" className="h-5 px-2 text-body-sm font-mono mobile-touch-target">
                   {d}
                 </Badge>
               ))}
@@ -274,7 +275,7 @@ export function MarketNews({
 
   if (loading && articles.length === 0) {
     return (
-      <div className={cn('panel', className)}>
+      <div className={cn('panel mobile-card premium-shadow', className)}>
         <div className="p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div className="h-5 w-24 bg-muted animate-pulse rounded" />
@@ -290,21 +291,21 @@ export function MarketNews({
 
   if (error) {
     return (
-      <div className={cn('panel p-6 text-center', className)}>
+      <div className={cn('panel p-6 text-center mobile-card premium-shadow', className)}>
         <Newspaper className="mx-auto h-10 w-10 text-muted-foreground/40 mb-2" />
-        <p className="text-sm text-muted-foreground">{error}</p>
+        <p className="text-body-md">{error}</p>
       </div>
     );
   }
 
   if (articles.length === 0) {
     return (
-      <div className={cn('panel p-6 text-center', className)}>
+      <div className={cn('panel p-6 text-center mobile-card premium-shadow', className)}>
         <Newspaper className="mx-auto h-10 w-10 text-muted-foreground/40 mb-2" />
-        <p className="text-sm text-muted-foreground">
+        <p className="text-body-md">
           {symbol ? `No market-relevant news for ${symbol}` : 'No market-relevant stories in the feed right now'}
         </p>
-        <p className="text-xs text-muted-foreground/70 mt-1">
+        <p className="text-body-sm text-muted-foreground/70 mt-1">
           Irrelevant lifestyle and human-interest wire copies are filtered out.
         </p>
       </div>
@@ -312,7 +313,7 @@ export function MarketNews({
   }
 
   return (
-    <div className={cn('panel flex flex-col', className)}>
+    <div className={cn('panel flex flex-col mobile-card premium-shadow', className)}>
       {/* Header */} 
       <div className="flex items-center justify-between border-b p-4">
         <div className="flex items-center gap-3">
@@ -320,16 +321,16 @@ export function MarketNews({
             <Newspaper className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm">
+            <h3 className="font-semibold text-h2">
               {variant === 'symbol' && symbol ? `News for ${symbol}` : 'Market Intelligence Wire'}
             </h3>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-body-md">
               {meta?.count ?? articles.length} stories · {meta?.sources ?? 0} sources · {meta?.feeds?.join(', ') ?? '—'}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-          <Badge variant="outline" className="h-5 px-2 gap-1 text-[10px]">
+        <div className="flex items-center gap-2 text-body-sm">
+          <Badge variant="outline" className="h-5 px-2 gap-1 text-body-sm">
             <Zap className="h-3 w-3" />
             Impact-ranked
           </Badge>

@@ -47,12 +47,12 @@ export function TradePlanLadder({
 }: TradePlanLadderProps) {
   if (!plan || (bias !== 'long' && bias !== 'short')) {
     return (
-      <div className={cn('panel p-4 text-center', className)}>
+      <div className={cn('panel p-4 text-center mobile-card premium-shadow', className)}>
         <div className="w-12 h-12 mx-auto rounded-xl bg-muted/60 flex items-center justify-center text-muted-foreground mb-3">
           <ShieldAlert className="h-6 w-6" />
         </div>
-        <p className="text-sm font-medium">No Active Trade Plan</p>
-        <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
+        <p className="text-body-md font-medium">No Active Trade Plan</p>
+        <p className="text-body-sm text-muted-foreground mt-1 max-w-xs mx-auto">
           This signal is standing aside. No entry, stop or target levels are generated for neutral readings.
         </p>
       </div>
@@ -115,13 +115,13 @@ export function TradePlanLadder({
 
   // Full variant — vertical ladder with visual track and distances
   return (
-    <div className={cn('panel space-y-4', className)}>
+    <div className={cn('panel space-y-4 mobile-card premium-shadow', className)}>
       <div className="flex items-center justify-between border-b pb-2">
-        <h3 className="font-semibold text-sm flex items-center gap-1.5">
+        <h3 className="font-semibold text-h3 flex items-center gap-1.5">
           <Target className="h-4 w-4 text-primary" />
           {title}
         </h3>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="flex items-center gap-3 text-body-sm text-muted-foreground">
           <span className="font-mono num">Risk: {fmtPct(riskPct)}</span>
           <span className="font-mono num">Max R: {fmtR(maxR)}</span>
         </div>
@@ -138,12 +138,12 @@ export function TradePlanLadder({
             <div className="absolute left-5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-card z-10" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">TP3</span>
-                <Badge variant="outline" className="text-[9px] font-mono h-5 px-2">
+                <span className="text-body-sm font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">TP3</span>
+                <Badge variant="outline" className="text-body-sm font-mono h-5 px-2">
                   +{fmtR(targets[2].rMultiple!)}
                 </Badge>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-body-sm text-muted-foreground">
                 <span className="font-mono num font-semibold text-foreground">${fp(targets[2].price)}</span>
                 <span className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400">
                   <TargetIcon className="h-3 w-3" />
@@ -158,12 +158,12 @@ export function TradePlanLadder({
             <div className="absolute left-5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-card z-10" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">TP2</span>
-                <Badge variant="outline" className="text-[9px] font-mono h-5 px-2">
+                <span className="text-body-sm font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">TP2</span>
+                <Badge variant="outline" className="text-body-sm font-mono h-5 px-2">
                   +{fmtR(targets[1].rMultiple!)}
                 </Badge>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-body-sm text-muted-foreground">
                 <span className="font-mono num font-semibold text-foreground">${fp(targets[1].price)}</span>
                 <span className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400">
                   <TargetIcon className="h-3 w-3" />
@@ -178,12 +178,12 @@ export function TradePlanLadder({
             <div className="absolute left-5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-card z-10" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">TP1</span>
-                <Badge variant="outline" className="text-[9px] font-mono h-5 px-2">
+                <span className="text-body-sm font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">TP1</span>
+                <Badge variant="outline" className="text-body-sm font-mono h-5 px-2">
                   +{fmtR(targets[0].rMultiple!)}
                 </Badge>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-body-sm text-muted-foreground">
                 <span className="font-mono num font-semibold text-foreground">${fp(targets[0].price)}</span>
                 <span className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400">
                   <TargetIcon className="h-3 w-3" />
@@ -198,12 +198,12 @@ export function TradePlanLadder({
             <div className="absolute left-5 w-3 h-3 rounded-full bg-primary border-2 border-card z-10 ring-2 ring-primary/20" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Entry</span>
-                <Badge variant="secondary" className="text-[9px] font-mono h-5 px-2">
+                <span className="text-body-sm font-bold uppercase tracking-wider text-primary">Entry</span>
+                <Badge variant="secondary" className="text-body-sm font-mono h-5 px-2">
                   {fmtPct(0)}
                 </Badge>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-body-sm text-muted-foreground">
                 <span className="font-mono num font-bold text-foreground">${fp(entry.price)}</span>
                 <span>Market entry at last close</span>
               </div>
@@ -215,12 +215,12 @@ export function TradePlanLadder({
             <div className="absolute left-5 w-3 h-3 rounded-full bg-rose-500 border-2 border-card z-10 ring-2 ring-rose-500/20" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">SL</span>
-                <Badge variant="destructive" className="text-[9px] font-mono h-5 px-2">
+                <span className="text-body-sm font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">SL</span>
+                <Badge variant="destructive" className="text-body-sm font-mono h-5 px-2">
                   -{fmtPct(riskPct)}
                 </Badge>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-body-sm text-muted-foreground">
                 <span className="font-mono num font-semibold text-rose-600 dark:text-rose-400">${fp(stop.price)}</span>
                 <span className="flex items-center gap-0.5 text-rose-600 dark:text-rose-400">
                   <SlIcon className="h-3 w-3" />
@@ -235,7 +235,7 @@ export function TradePlanLadder({
       {/* Derivation Note */}
       {showDerivation && derivation && (
         <div className="pt-2 border-t border-border/40">
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
+          <p className="text-body-md text-muted-foreground leading-relaxed">
             <span className="font-medium text-foreground">Derivation:</span> {derivation}
           </p>
         </div>

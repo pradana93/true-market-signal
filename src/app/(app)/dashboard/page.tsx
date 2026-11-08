@@ -89,10 +89,10 @@ export default function DashboardPage() {
                 <span>Multi-Method Confluence Engine Active</span>
               </div>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-balance">
+            <h1 className="text-display-2 tracking-tight text-balance">
               Flagship Market Intelligence
             </h1>
-            <p className="text-muted-foreground text-sm md:text-base max-w-2xl leading-relaxed">
+            <p className="text-muted-foreground text-body-md max-w-2xl leading-relaxed">
               Deterministic scoring across 18 instruments with live trade execution plans (TP1, TP2, TP3, SL) derived from market regime and volatility.
             </p>
           </div>
@@ -112,8 +112,8 @@ export default function DashboardPage() {
       </div>
 
       {/* Executive Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="panel p-5 flex items-center justify-between">
+      <div className="mobile-grid">
+        <div className="panel mobile-card flex items-center justify-between premium-shadow">
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Instruments Scored</p>
             <p className="text-3xl font-bold num">{stats.total}</p>
@@ -123,7 +123,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="panel p-5 flex items-center justify-between relative overflow-hidden border-l-4 border-l-emerald-500">
+        <div className="panel mobile-card flex items-center justify-between relative overflow-hidden border-l-4 border-l-emerald-500 premium-shadow">
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Long Conviction</p>
             <p className="text-3xl font-bold num text-emerald-600 dark:text-emerald-400">{stats.longs}</p>
@@ -133,7 +133,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="panel p-5 flex items-center justify-between relative overflow-hidden border-l-4 border-l-rose-500">
+        <div className="panel mobile-card flex items-center justify-between relative overflow-hidden border-l-4 border-l-rose-500 premium-shadow">
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Short Conviction</p>
             <p className="text-3xl font-bold num text-rose-600 dark:text-rose-400">{stats.shorts}</p>
@@ -143,7 +143,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="panel p-5 flex items-center justify-between relative overflow-hidden border-l-4 border-l-slate-400">
+        <div className="panel mobile-card flex items-center justify-between relative overflow-hidden border-l-4 border-l-slate-400 premium-shadow">
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Standing Aside</p>
             <p className="text-3xl font-bold num text-muted-foreground">{stats.neutrals}</p>
@@ -155,14 +155,14 @@ export default function DashboardPage() {
       </div>
 
       {/* Filtering Bar */}
-      <div className="panel p-3 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="panel p-3 flex flex-col lg:flex-row lg:items-center justify-between gap-4 mobile-card premium-shadow">
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
-          <span className="text-xs font-medium text-muted-foreground px-2 uppercase tracking-wider shrink-0">Market:</span>
+          <span className="text-body-sm font-medium text-muted-foreground px-2 uppercase tracking-wider shrink-0">Market:</span>
           {MARKETS.map(m => (
             <button
               key={m}
               onClick={() => setMarketFilter(m)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg capitalize whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 text-body-sm font-medium rounded-lg capitalize whitespace-nowrap transition-all mobile-touch-target ${
                 marketFilter === m
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
@@ -174,12 +174,12 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
-          <span className="text-xs font-medium text-muted-foreground px-2 uppercase tracking-wider shrink-0">Bias:</span>
+          <span className="text-body-sm font-medium text-muted-foreground px-2 uppercase tracking-wider shrink-0">Bias:</span>
           {DIRECTIONS.map(d => (
             <button
               key={d}
               onClick={() => setDirectionFilter(d)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg capitalize whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 text-body-sm font-medium rounded-lg capitalize whitespace-nowrap transition-all mobile-touch-target ${
                 directionFilter === d
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
@@ -239,26 +239,26 @@ export default function DashboardPage() {
                 .map(([id]) => id);
 
               return (
-                <Link key={signal.id} href={`/signals/${encodeURIComponent(sym)}`} className="group block">
-                  <div className={`panel h-full border-l-4 ${accent} transition-all duration-200 hover:shadow-lg hover:border-primary/40 flex flex-col justify-between overflow-hidden bg-card`}>
+                <Link key={signal.id} href={`/signals/${encodeURIComponent(sym)}`} className="group block mobile-touch-target">
+                  <div className={`panel h-full border-l-4 ${accent} transition-all duration-200 hover:shadow-lg hover:border-primary/40 flex flex-col justify-between overflow-hidden bg-card mobile-card premium-shadow`}>
                     <div className="p-6 pb-4 space-y-4">
                       {/* Header Row */}
                       <div className="flex items-start justify-between gap-2">
                         <div className="space-y-0.5">
                           <div className="flex items-center space-x-2">
-                            <span className="font-bold text-lg tracking-tight group-hover:text-primary transition-colors">{sym}</span>
-                            <span className="text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                            <span className="font-bold text-h2 tracking-tight group-hover:text-primary transition-colors">{sym}</span>
+                            <span className="text-body-sm font-medium uppercase tracking-wider px-2 py-0.5 rounded bg-muted text-muted-foreground">
                               {mkt}
                             </span>
                           </div>
                           {price != null && (
-                            <p className="text-xs font-mono text-muted-foreground num">
+                            <p className="text-body-md font-mono text-muted-foreground num">
                               ${Number(price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </p>
                           )}
                         </div>
                         <div className="text-right">
-                          <Badge variant="outline" className="font-mono text-[10px] uppercase">
+                          <Badge variant="outline" className="font-mono text-body-sm uppercase">
                             {signal.tf}
                           </Badge>
                         </div>
@@ -281,14 +281,14 @@ export default function DashboardPage() {
                             </div>
                           )}
                           <div>
-                            <span className={`text-sm font-bold capitalize block leading-none ${
+                            <span className={`text-body-md font-bold capitalize block leading-none ${
                               isLong ? 'text-emerald-600 dark:text-emerald-400'
                                 : isShort ? 'text-rose-600 dark:text-rose-400'
                                 : 'text-muted-foreground'
                             }`}>
                               {signal.direction}
                             </span>
-                            <span className="text-[10px] text-muted-foreground mt-0.5 block">
+                            <span className="text-body-sm text-muted-foreground mt-0.5 block">
                               {Math.round(signal.confidence * 100)}% Confluence
                             </span>
                           </div>
@@ -306,7 +306,7 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Reason */}
-                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                      <p className="text-body-sm text-muted-foreground leading-relaxed line-clamp-2">
                         {signal.reason}
                       </p>
 
@@ -315,21 +315,21 @@ export default function DashboardPage() {
                         <TradePlanLadder plan={plan} bias={signal.direction} variant="compact" />
                       ) : (
                         <div className="pt-2 border-t border-border/60 text-center py-2">
-                          <span className="text-xs text-muted-foreground italic">Standing aside — no active trade plan</span>
+                          <span className="text-body-sm text-muted-foreground italic">Standing aside — no active trade plan</span>
                         </div>
                       )}
                     </div>
 
                     {/* Footer Methods & Action */}
-                    <div className="px-6 py-3 bg-muted/20 border-t flex items-center justify-between text-xs">
+                    <div className="px-6 py-3 bg-muted/20 border-t flex items-center justify-between text-body-sm">
                       <div className="flex flex-wrap gap-1">
                         {fired.slice(0, 2).map(m => (
-                          <span key={m} className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-muted text-muted-foreground">
+                          <span key={m} className="px-1.5 py-0.5 rounded text-body-sm font-mono bg-muted text-muted-foreground">
                             {m.split('.')[1]}
                           </span>
                         ))}
                         {fired.length > 2 && (
-                          <span className="text-[10px] text-muted-foreground self-center">+{fired.length - 2}</span>
+                          <span className="text-body-sm text-muted-foreground self-center">+{fired.length - 2}</span>
                         )}
                       </div>
                       <span className="font-medium text-primary flex items-center group-hover:translate-x-0.5 transition-transform">
