@@ -9,6 +9,12 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'True Market Signal',
   description: 'Real-time market signal engine for traders',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({
@@ -17,8 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={cn(inter.className, 'antialiased')}>
+    <html lang="en" className="h-full">
+      <body className={cn(inter.className, 'antialiased h-full min-h-screen overflow-x-hidden')}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

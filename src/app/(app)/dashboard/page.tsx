@@ -112,7 +112,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Executive Metric Cards */}
-      <div className="mobile-grid">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div className="panel mobile-card flex items-center justify-between premium-shadow">
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Instruments Scored</p>
@@ -200,7 +200,7 @@ export default function DashboardPage() {
 
             {loading && signals.length === 0 ? (
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-          <div className="xl:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="xl:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {[1, 2, 3, 4, 5, 6].map(i => (
               <div key={i} className="panel h-80 animate-pulse bg-muted/30" />
             ))}
@@ -224,7 +224,7 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-          <div className="xl:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="xl:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {filteredSignals.map(signal => {
               const sym = signal.instrument?.symbol ?? '';
               const mkt = signal.instrument?.market ?? '';
