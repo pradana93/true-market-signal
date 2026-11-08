@@ -13,15 +13,16 @@ export async function GET(request: NextRequest) {
     const direction = searchParams.get('direction');
     const confidence = searchParams.get('confidence');
     
+    // Fetch recent history rather than a flat 50 rows. A flat limit returns old
+    // runs of the same instrument alongside the current one, so the board shows
+    // each symbol two or three times with a stale row next to the live one.
+    // We pull enough history to guarantee a current row per instrument, then
+    // collapse to one row per (instrument, timeframe) below.
     let query = supabase
       .from('signals')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(50);
-    
-    if (market) {
-      // This filter needs to be applied after fetching instruments
-    }
+      .limit(300);
     
     if (timeframe) {
       query = query.eq('tf', timeframe);
@@ -62,10 +63,36 @@ export async function GET(request: NextRequest) {
 
     const instrumentsMap = new Map(instruments.map(i => [i.id, i]));
 
-    const mergedData = signals.map(signal => ({
-      ...signal,
-      instrument: instrumentsMap.get(signal.instrument_id)
-    }));
+    // Collapse to the newest signal per (instrument, timeframe). Signals is an
+    // append-only history table; without this the board renders every historical
+    // score as if it were current, duplicating each instrument.
+    const latestByKey = new Map<string, any>();
+    for (const signal of signals) {
+      const key = `${signal.instrument_id}:${signal.tf}`;
+      const existing = latestByKey.get(key);
+      if (!existing || new Date(signal.created_at) > new Date(existing.created_at)) {
+        latestByKey.set(key, signal);
+      }
+    }
+
+    // An instrument scored on both 1h and 1d would otherwise appear twice; keep
+    // the single most recent reading per instrument for the board.
+    const latestByInstrument = new Map<number, any>();
+    for (const signal of latestByKey.values()) {
+      const existing = latestByInstrument.get(signal.instrument_id);
+      if (!existing || new Date(signal.created_at) > new Date(existing.created_at)) {
+        latestByInstrument.set(signal.instrument_id, signal);
+      }
+    }
+
+    const mergedData = [...latestByInstrument.values()]
+      .map(signal => ({
+        ...signal,
+        instrument: instrumentsMap.get(signal.instrument_id),
+      }))
+      // Drop rows whose instrument was deleted, so the UI never renders UNKNOWN.
+      .filter(s => s.instrument)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     // Now apply market filter if present
     const filteredData = market ? mergedData.filter(item => item.instrument?.market === market) : mergedData;

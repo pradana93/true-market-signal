@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, Layers, ShieldAlert, Activity } from 'lucide-react';
 import Link from 'next/link';
 
@@ -25,21 +24,26 @@ interface SignalItem {
   };
 }
 
+const MARKETS = ['all', 'crypto', 'stocks', 'forex', 'commodities', 'etfs'];
+const DIRECTIONS = ['all', 'long', 'short', 'neutral'];
+
 export default function DashboardPage() {
   const [signals, setSignals] = useState<SignalItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [marketFilter, setMarketFilter] = useState('all');
   const [directionFilter, setDirectionFilter] = useState('all');
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const fetchSignals = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/signals');
+      const res = await fetch('/api/signals', { cache: 'no-store' });
       const json = await res.json();
       if (json.error) throw new Error(json.error);
       setSignals(json.data || []);
+      setLastUpdated(new Date());
     } catch (err: any) {
       setError(err.message || 'Failed to load signals');
     } finally {
@@ -68,207 +72,183 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header & Stats Banner */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-muted/30 p-6 rounded-xl border">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center space-x-2">
-            <Activity className="h-6 w-6 text-primary animate-pulse" />
-            <h1 className="text-3xl font-bold tracking-tight">True Signal Board</h1>
-          </div>
-          <p className="text-muted-foreground mt-1">
-            Multi-method confluence engine tracking 18 instruments across crypto, equities, forex, and commodities.
+          <h1 className="text-2xl font-semibold tracking-tight">Signal Board</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            One live reading per instrument. Only methods that fired are counted.
           </p>
         </div>
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-2 bg-background px-3 py-1.5 rounded-lg border text-xs font-medium">
-            <span className="flex h-2 w-2 rounded-full bg-green-500 animate-ping" />
-            <span>Live Engine Active</span>
-          </div>
-          <Button variant="outline" size="sm" onClick={fetchSignals} disabled={loading} className="flex items-center space-x-1">
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+        <div className="flex items-center gap-2">
+          <span className="hidden sm:inline text-xs text-muted-foreground">
+            {lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}` : 'Loading'}
+          </span>
+          <Button variant="outline" size="sm" onClick={fetchSignals} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
           </Button>
         </div>
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="p-4 flex items-center justify-between">
-          <div>
-            <p className="text-xs text-muted-foreground font-medium uppercase">Tracked Signals</p>
-            <p className="text-2xl font-bold mt-1">{stats.total}</p>
-          </div>
-          <Layers className="h-8 w-8 text-muted-foreground/40" />
+      {/* Metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Card className="p-4">
+          <p className="text-xs text-muted-foreground">Instruments</p>
+          <p className="text-2xl font-semibold mt-1 tabular-nums">{stats.total}</p>
         </Card>
-        <Card className="p-4 flex items-center justify-between border-l-4 border-l-green-500">
-          <div>
-            <p className="text-xs text-muted-foreground font-medium uppercase">Bullish Conviction</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">{stats.longs}</p>
-          </div>
-          <TrendingUp className="h-8 w-8 text-green-500/40" />
+        <Card className="p-4">
+          <p className="text-xs text-muted-foreground">Long</p>
+          <p className="text-2xl font-semibold mt-1 tabular-nums text-emerald-600 dark:text-emerald-400">{stats.longs}</p>
         </Card>
-        <Card className="p-4 flex items-center justify-between border-l-4 border-l-red-500">
-          <div>
-            <p className="text-xs text-muted-foreground font-medium uppercase">Bearish Conviction</p>
-            <p className="text-2xl font-bold text-red-600 mt-1">{stats.shorts}</p>
-          </div>
-          <TrendingDown className="h-8 w-8 text-red-500/40" />
+        <Card className="p-4">
+          <p className="text-xs text-muted-foreground">Short</p>
+          <p className="text-2xl font-semibold mt-1 tabular-nums text-rose-600 dark:text-rose-400">{stats.shorts}</p>
         </Card>
-        <Card className="p-4 flex items-center justify-between border-l-4 border-l-gray-400">
-          <div>
-            <p className="text-xs text-muted-foreground font-medium uppercase">Standing Aside</p>
-            <p className="text-2xl font-bold text-muted-foreground mt-1">{stats.neutrals}</p>
-          </div>
-          <ShieldAlert className="h-8 w-8 text-muted-foreground/40" />
+        <Card className="p-4">
+          <p className="text-xs text-muted-foreground">Standing aside</p>
+          <p className="text-2xl font-semibold mt-1 tabular-nums text-muted-foreground">{stats.neutrals}</p>
         </Card>
       </div>
 
-      {/* Filter Controls */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-2 border-b">
-        <div className="flex items-center space-x-2 w-full sm:w-auto">
-          <span className="text-sm font-medium text-muted-foreground">Market:</span>
-          <div className="flex flex-wrap gap-1">
-            {['all', 'crypto', 'stocks', 'forex', 'commodities', 'etfs'].map(m => (
-              <Button
-                key={m}
-                variant={marketFilter === m ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setMarketFilter(m)}
-                className="capitalize text-xs h-8 px-3"
-              >
-                {m}
-              </Button>
-            ))}
-          </div>
+      {/* Filters */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-center gap-1 overflow-x-auto">
+          {MARKETS.map(m => (
+            <button
+              key={m}
+              onClick={() => setMarketFilter(m)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md capitalize whitespace-nowrap transition-colors ${
+                marketFilter === m
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              {m}
+            </button>
+          ))}
         </div>
-        <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
-          <span className="text-sm font-medium text-muted-foreground">Direction:</span>
-          {['all', 'long', 'short', 'neutral'].map(d => (
-            <Button
+        <div className="flex items-center gap-1">
+          {DIRECTIONS.map(d => (
+            <button
               key={d}
-              variant={directionFilter === d ? 'default' : 'ghost'}
-              size="sm"
               onClick={() => setDirectionFilter(d)}
-              className="capitalize text-xs h-8 px-3"
+              className={`px-3 py-1.5 text-xs font-medium rounded-md capitalize whitespace-nowrap transition-colors ${
+                directionFilter === d
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-muted'
+              }`}
             >
               {d}
-            </Button>
+            </button>
           ))}
         </div>
       </div>
 
-      {/* Error / Loading / Signal Grid */}
       {error && (
-        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-600 text-sm">
+        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md text-destructive text-sm">
           {error}
         </div>
       )}
 
       {loading && signals.length === 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <Card key={i} className="h-48 animate-pulse bg-muted/20" />
+            <Card key={i} className="h-44 animate-pulse bg-muted/30" />
           ))}
         </div>
       ) : filteredSignals.length === 0 ? (
-        <div className="text-center py-16 border rounded-xl bg-muted/10">
-          <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground/50" />
-          <h3 className="mt-4 font-semibold text-lg">No signals match filter</h3>
-          <p className="text-sm text-muted-foreground mt-1">Try resetting market or direction filters.</p>
+        <div className="text-center py-16 border rounded-lg">
+          <AlertCircle className="mx-auto h-8 w-8 text-muted-foreground/50" />
+          <p className="mt-3 font-medium">No instruments match this filter</p>
+          <p className="text-sm text-muted-foreground mt-1">Clear the market or direction filter to see all readings.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredSignals.map(signal => {
-            const sym = signal.instrument?.symbol || 'UNKNOWN';
-            const mkt = signal.instrument?.market || 'general';
+            const sym = signal.instrument?.symbol ?? '';
+            const mkt = signal.instrument?.market ?? '';
             const price = signal.evidence?.price;
-            const firedMethods = Object.entries(signal.evidence?.methodSignals || {})
-              .filter(([_, s]: any) => s.direction !== 'neutral')
-              .map(([id]) => id.split('.')[1]);
+            const fired = Object.entries(signal.evidence?.methodSignals || {})
+              .filter(([, s]: any) => s.direction !== 'neutral')
+              .map(([id]) => id);
+            const isLong = signal.direction === 'long';
+            const isShort = signal.direction === 'short';
+            const accent = isLong ? 'border-l-emerald-500' : isShort ? 'border-l-rose-500' : 'border-l-slate-300 dark:border-l-slate-700';
 
             return (
-              <Card key={signal.id} className="hover:shadow-lg transition-all duration-200 flex flex-col justify-between border-l-4" style={{
-                borderLeftColor: signal.direction === 'long' ? '#22c55e' : signal.direction === 'short' ? '#ef4444' : '#94a3b8'
-              }}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-bold text-lg">{sym}</span>
-                      <Badge variant="secondary" className="capitalize text-xs">
-                        {mkt}
-                      </Badge>
+              <Link key={signal.id} href={`/signals/${encodeURIComponent(sym)}`} className="group">
+                <Card className={`h-full border-l-2 ${accent} transition-colors hover:bg-muted/40`}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="flex items-baseline gap-2">
+                          <span className="font-semibold truncate">{sym}</span>
+                          <span className="text-[11px] text-muted-foreground capitalize shrink-0">{mkt}</span>
+                        </div>
+                        {price != null && (
+                          <p className="font-mono text-xs text-muted-foreground mt-0.5 tabular-nums">
+                            ${Number(price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-[10px] font-mono uppercase text-muted-foreground shrink-0">{signal.tf}</span>
                     </div>
-                    <Badge variant="outline" className="font-mono text-xs uppercase">
-                      {signal.tf}
-                    </Badge>
-                  </div>
 
-                  <div className="flex items-center justify-between mt-3">
-                    <div className="flex items-center space-x-1.5">
-                      {signal.direction === 'long' ? (
-                        <TrendingUp className="h-5 w-5 text-green-500" />
-                      ) : signal.direction === 'short' ? (
-                        <TrendingDown className="h-5 w-5 text-red-500" />
-                      ) : (
-                        <AlertCircle className="h-5 w-5 text-muted-foreground" />
-                      )}
-                      <span className={`font-bold text-base capitalize ${
-                        signal.direction === 'long' ? 'text-green-600 dark:text-green-400' :
-                        signal.direction === 'short' ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'
-                      }`}>
-                        {signal.direction}
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center gap-1.5">
+                        {isLong ? <TrendingUp className="h-4 w-4 text-emerald-500" />
+                          : isShort ? <TrendingDown className="h-4 w-4 text-rose-500" />
+                          : <AlertCircle className="h-4 w-4 text-muted-foreground" />}
+                        <span className={`text-sm font-semibold capitalize ${
+                          isLong ? 'text-emerald-600 dark:text-emerald-400'
+                            : isShort ? 'text-rose-600 dark:text-rose-400'
+                            : 'text-muted-foreground'
+                        }`}>
+                          {signal.direction}
+                        </span>
+                      </div>
+                      <span className="text-xs font-medium tabular-nums text-muted-foreground">
+                        {Math.round(signal.confidence * 100)}%
                       </span>
                     </div>
-                    {price && (
-                      <span className="font-mono text-sm font-semibold">
-                        ${Number(price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                    )}
-                  </div>
 
-                  <CardDescription className="text-xs mt-2 line-clamp-3 leading-relaxed">
-                    {signal.reason}
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="pt-0 space-y-4">
-                  {/* Confidence Bar */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">Confidence Confluence</span>
-                      <span className="font-semibold">{Math.round(signal.confidence * 100)}%</span>
-                    </div>
-                    <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
+                    <div className="w-full h-1 bg-muted rounded-full overflow-hidden mt-2">
                       <div
-                        className={`h-full transition-all duration-500 ${
-                          signal.confidence >= 0.7 ? 'bg-green-500' :
-                          signal.confidence >= 0.5 ? 'bg-yellow-500' : 'bg-orange-500'
+                        className={`h-full rounded-full ${
+                          isLong ? 'bg-emerald-500' : isShort ? 'bg-rose-500' : 'bg-slate-400 dark:bg-slate-600'
                         }`}
                         style={{ width: `${signal.confidence * 100}%` }}
                       />
                     </div>
-                  </div>
+                  </CardHeader>
 
-                  {/* Fired Methods badges */}
-                  {firedMethods.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {firedMethods.slice(0, 3).map((m, i) => (
-                        <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono bg-muted text-muted-foreground">
-                          {m}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  <CardContent className="pt-0 space-y-3">
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                      {signal.reason}
+                    </p>
 
-                  {/* Footer metadata */}
-                  <div className="pt-2 border-t flex items-center justify-between text-[11px] text-muted-foreground">
-                    <span>{new Date(signal.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                    {signal.invalidation && (
-                      <span className="font-mono text-red-500/80">Invalidates: ${Number(signal.invalidation).toLocaleString()}</span>
+                    {fired.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {fired.slice(0, 3).map(m => (
+                          <Badge key={m} variant="secondary" className="text-[10px] font-mono px-1.5 py-0 font-normal">
+                            {m.split('.')[1]}
+                          </Badge>
+                        ))}
+                        {fired.length > 3 && (
+                          <span className="text-[10px] text-muted-foreground">+{fired.length - 3}</span>
+                        )}
+                      </div>
                     )}
-                  </div>
-                </CardContent>
-              </Card>
+
+                    {signal.invalidation != null && (
+                      <p className="text-[11px] text-muted-foreground font-mono tabular-nums">
+                        Invalidation ${Number(signal.invalidation).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
             );
           })}
         </div>
