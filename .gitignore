@@ -1,0 +1,54 @@
+node_modules/
+.next/
+out/
+build/
+.DS_Store
+
+# TypeScript
+*.tsbuildinfo
+
+# Next.js
+.next/
+out/
+
+# Supabase
+.env.local
+.env
+supabase/.temp/
+
+# Logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Editor
+.vscode/
+.idea/
+
+# Build output
+dist/
+build/
+
+# Test coverage
+coverage/
+
+# Secret files
+.env.local
+.env
+
+# Biome
+.biome.json
+
+# Vitest
+.vitest/
+
+# Playwright
+.playwright/
+
+# Drizzle
+.drizzle/
+
+# Cache
+.cache/
+.nyc_output/

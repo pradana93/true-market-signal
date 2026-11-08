@@ -1,101 +1,100 @@
-# True Market Signal Web App
+# True Market Signal
 
-A production-ready market signal engine that ingests live data across Stocks, Crypto, Commodities, Forex, Indices, and ETFs, then generates actionable long/short/neutral signals with trader-grade rationale.
+A multi-method market signal engine with a Next.js dashboard. It tracks 18 instruments across crypto, equities, ETFs, FX and commodities, scores each with ten independent methods, and reports a directional call with the evidence that produced it.
 
-## Features
+**The engine is designed to tell you when there is no edge.** Roughly a third of instruments report `neutral` at low confidence on any given run. That is the intended output, not a failure.
 
-- **Multi-source market data**: Crypto (Binance, Bybit, OKX, Coinbase), Stocks (Finnhub), Forex/Commodities (Twelve Data)
-- **Advanced signal engine**: Smart Money Concepts, Volume Profile, Order Book Heatmap, Footprint Analysis, Tape/CVD, Absorption/Exhaustion
-- **Real-time dashboard**: Signal Board with sortable grid, deep dive views, confidence scoring
-- **Production architecture**: Next.js 15 App Router, Supabase Postgres, Upstash Redis, TradingView charts
+## What it does
 
-## Tech Stack
+- Ingests OHLCV candles from Binance / Finnhub / Twelve Data, falling back to Yahoo Finance when a primary source is unavailable.
+- Runs six method families: SMC, volume profile, order book, footprint, tape/CVD, absorption, plus a confluence layer.
+- Detects market regime (trending / ranging / quiet / volatile) and reweights methods accordingly.
+- Fuses method signals into one call with a confidence score and an auditable reason string.
+- Serves it through a Next.js 15 dashboard, REST API, and Supabase Realtime stream.
 
-- **Framework**: Next.js 15 (App Router) + TypeScript strict
-- **UI**: Tailwind CSS + shadcn/ui + lucide-react
-- **Charts**: TradingView Lightweight Charts + Recharts
-- **State**: TanStack Query + Zustand
-- **Realtime**: Supabase Realtime
-- **DB**: Supabase Postgres (RLS on)
-- **Cache**: Upstash Redis
-- **Auth**: Supabase Auth (magic link + OAuth)
-- **Validation**: Zod everywhere
-- **ORM**: Drizzle ORM
-- **Tests**: Vitest + Playwright
-- **Lint/Format**: Biome + secretlint
-- **CI**: GitHub Actions
-- **Deploy**: Vercel
+See [`docs/SIGNAL_ENGINE.md`](docs/SIGNAL_ENGINE.md) for the methodology and its limits.
 
-## Getting Started
+## Stack
 
-### Prerequisites
+Next.js 15 (App Router) · TypeScript · Tailwind CSS · shadcn/ui · TanStack Query · Supabase (Postgres, Realtime, Auth) · Drizzle ORM · Vitest · GitHub Actions
 
-- Node.js 18+
-- npm or pnpm
-
-### Installation
+## Local setup
 
 ```bash
-# Clone the repository
 npm install
-
-# Create .env.local file with your environment variables
-# See .env.example for required variables
-
-# Start the development server
-npm run dev
+cp .env.example .env.local   # fill in the values below
 ```
 
-### Environment Variables
+Required environment variables:
 
-Create a `.env.local` file in the root directory with the following variables:
-
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://hdegnxatnjmfiparoweq.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkZWdueGF0bmptZmlwYXJvd2VxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxMTc3NTEsImV4cCI6MjEwOTY5Mzc1MX0.skeC6HKK7CbZHUkhJdzqrW4GK-VDAL5aN86qE88NzOI
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkZWdueGF0bmptZmlwYXJvd2VxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5NDExNzc1MSwiZXhwIjoyMTA5NjkzNzUxfQ.p-aWqxKFUzP5zuCPNJg72rGrF9-CpC4huF2F-DV41Fo
-
-# Data Providers
-FINNHUB_API_KEY=dbo2lk1r01qpqmftt1b0dbo2lk1r01qpqmftt1bg
-TWELVEDATA_API_KEY=01b40b77ee4e4157b90b701396795920
-
-# Redis
-UPSTASH_REDIS_REST_URL=
-UPSTASH_REDIS_TOKEN=
-
-# Vercel
-VERCEL_ENV=development
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+FINNHUB_API_KEY=
+TWELVEDATA_API_KEY=
 ```
 
-## Development
+`SUPABASE_SERVICE_ROLE_KEY` bypasses Row Level Security and is **server-side only**. Never expose it to the client.
 
-### Running the Development Server
+Apply the database schema:
+
+```bash
+npx drizzle-kit push        # or: supabase db push
+```
+
+Ingest one round of data and score every instrument:
+
+```bash
+node --env-file=.env.local scripts/run-ingest.mjs
+```
+
+Run the app:
 
 ```bash
 npm run dev
 ```
 
-### Running Tests
+## Scripts
 
-```bash
-npm test
-```
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Dev server |
+| `npm run build` | Production build, type-checked |
+| `npx tsc --noEmit` | Type check only |
+| `npm test -- --run` | Regression suite |
+| `node scripts/run-ingest.mjs` | Ingest + score all instruments |
+| `node scripts/verify-supabase.mjs` | Check table reachability and RLS |
 
-### Building for Production
+## Data model
 
-```bash
-npm run build
-```
+Eight tables in Supabase, all with RLS enabled: `instruments`, `candles`, `orderbook_snapshots`, `trades_agg`, `signals`, `signal_weights`, `watchlists`, `alerts`.
+
+Anonymous clients may read published signals and instruments. All writes require the service role. Anonymous insert attempts are rejected — verified by `scripts/verify-supabase.mjs`.
+
+## API
+
+| Route | Method | Description |
+|---|---|---|
+| `/api/signals` | GET | Latest signals across all instruments |
+| `/api/signals/[symbol]` | GET | Signals for one instrument, `?timeframe=1h` |
+| `/api/stream` | GET | Realtime signal stream |
+| `/api/cron/[job]` | POST | Scheduled ingestion (`crypto` / `stocks` / `forex`) |
+
+## CI
+
+`.github/workflows/ci.yml` runs on every push and pull request against `master`:
+
+1. `npx tsc --noEmit`
+2. `npm test -- --run`
+3. `npm run build` (with type checking enabled — build errors are not suppressed)
 
 ## Deployment
 
-The application is configured for deployment to Vercel. Simply connect your GitHub repository to Vercel and it will automatically deploy.
+Deploy to Vercel with the environment variables above set for Production, Preview and Development. The app requires `SUPABASE_SERVICE_ROLE_KEY` at build time for server-side data access.
 
-## License
+## Reading the output
 
-MIT
+Each signal carries `direction`, `confidence`, `reason`, and `invalidation` (1.5 × ATR on the opposite side of the call).
 
-## Contact
-
-For questions or support, please open an issue on GitHub.
+Confidence is a weighted measure of **method agreement**, not a calibrated probability of the trade working. A 0.95 means "nearly every method that fired agrees", not "95% win rate". Treat it as a measure of internal consistency until it is backtested against realized outcomes.
