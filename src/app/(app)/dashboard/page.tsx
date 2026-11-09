@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, Activity, Target, ShieldAlert, ArrowUpRight, ArrowDownRight, Layers } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, Activity, Target, ShieldAlert, ArrowUpRight, ArrowDownRight, Layers, Globe, Building2, Flag } from 'lucide-react';
 import Link from 'next/link';
 import { TradePlanLadder } from '@/components/trade-plan';
 import { MarketNews } from '@/components/market-news';
@@ -28,7 +28,45 @@ interface SignalItem {
   };
 }
 
-const MARKETS = ['all', 'crypto', 'stocks', 'forex', 'commodities', 'etfs'];
+const MARKET_OPTIONS = {
+  all: 'All Markets',
+  crypto: 'Crypto',
+  stocks: 'Stocks',
+  forex: 'Forex',
+  commodities: 'Commodities',
+  etfs: 'ETFs',
+  asia: 'Asia Session',
+  uk: 'London Session',
+  ny: 'New York Session',
+};
+
+const MARKETS = Object.keys(MARKET_OPTIONS);
+
+const SESSION_MARKETS = {
+  asia: ['forex', 'crypto'],
+  uk: ['forex', 'stocks', 'etfs'],
+  ny: ['stocks', 'etfs', 'commodities'],
+};
+
+function getCurrentSession(): { id: string; label: string; color: string; icon: React.ReactNode } {
+  const now = new Date();
+  const utcHours = now.getUTCHours();
+  // Asia: 00:00-08:00 UTC
+  // London: 08:00-16:00 UTC
+  // New York: 13:00-21:00 UTC (overlap with London)
+  if (utcHours >= 0 && utcHours < 8) {
+    return { id: 'asia', label: 'Asia Session', color: 'text-amber-600 dark:text-amber-400', icon: <Globe className="h-4 w-4" /> };
+  }
+  if (utcHours >= 8 && utcHours < 13) {
+    return { id: 'uk', label: 'London Session', color: 'text-blue-600 dark:text-blue-400', icon: <Building2 className="h-4 w-4" /> };
+  }
+  if (utcHours >= 13 && utcHours < 21) {
+    return { id: 'ny', label: 'New York Session', color: 'text-indigo-600 dark:text-indigo-400', icon: <Flag className="h-4 w-4" /> };
+  }
+  // 21:00-24:00 UTC - Pre-Asia / Late NY
+  return { id: 'asia', label: 'Asia Session (Pre-Open)', color: 'text-amber-600/60 dark:text-amber-400/60', icon: <Globe className="h-4 w-4" /> };
+}
+
 const DIRECTIONS = ['all', 'long', 'short', 'neutral'];
 
 export default function DashboardPage() {
@@ -38,6 +76,7 @@ export default function DashboardPage() {
   const [directionFilter, setDirectionFilter] = useState('all');
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const currentSession = getCurrentSession();
 
   const fetchSignals = async () => {
     setLoading(true);
@@ -62,9 +101,12 @@ export default function DashboardPage() {
   }, []);
 
   const filteredSignals = signals.filter(s => {
-    if (marketFilter !== 'all' && s.instrument?.market !== marketFilter) return false;
-    if (directionFilter !== 'all' && s.direction !== directionFilter) return false;
-    return true;
+    const market = s.instrument?.market;
+    if (marketFilter === 'all') return true;
+    if (SESSION_MARKETS[marketFilter as keyof typeof SESSION_MARKETS]) {
+      return SESSION_MARKETS[marketFilter as keyof typeof SESSION_MARKETS].includes(market || '');
+    }
+    return market === marketFilter;
   });
 
   const stats = {
@@ -88,6 +130,10 @@ export default function DashboardPage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
                 <span>Multi-Method Confluence Engine Active</span>
               </div>
+            </div>
+            <div className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-muted/50 border border-border/50 text-body-sm ${currentSession.color}`}>
+              {currentSession.icon}
+              <span>{currentSession.label}</span>
             </div>
             <h1 className="text-display-2 tracking-tight text-balance">
               Flagship Market Intelligence
@@ -168,7 +214,7 @@ export default function DashboardPage() {
                   : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
               }`}
             >
-              {m}
+              {MARKET_OPTIONS[m as keyof typeof MARKET_OPTIONS]}
             </button>
           ))}
         </div>
