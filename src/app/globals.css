@@ -44,6 +44,11 @@
     --surface: 220 24% 98%;
     --surface-raised: 0 0% 100%;
 
+    /* Brand accent: deep emerald, AA-safe with white foreground. */
+    --brand: 158 84% 25%;
+    --brand-foreground: 0 0% 100%;
+    --brand-soft: 152 55% 94%;
+
     --radius: 0.625rem;
   }
 
@@ -83,6 +88,11 @@
 
     --surface: 224 28% 8%;
     --surface-raised: 224 24% 11%;
+
+    /* Brand accent: bright emerald, dark text for AA contrast. */
+    --brand: 152 70% 52%;
+    --brand-foreground: 164 84% 8%;
+    --brand-soft: 158 40% 14%;
   }
 }
 
@@ -198,6 +208,15 @@
 
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Faint engineering grid used behind the hero. Masked by the consumer so it
+     fades out rather than ending on a hard line. */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, hsl(var(--border) / 0.6) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.6) 1px, transparent 1px);
+    background-size: 56px 56px;
   }
 
   .scrollbar-none {

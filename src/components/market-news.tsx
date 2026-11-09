@@ -67,14 +67,14 @@ function SentimentChip({ sentiment }: { sentiment: MarketNewsArticle['sentiment'
       variant="outline"
       className={cn(
         'text-[10px] font-mono h-5 px-2 gap-1',
-        sentiment === 'bullish' && 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/5',
+        sentiment === 'bullish' && 'text-brand border-brand/30 bg-brand/5',
         sentiment === 'bearish' && 'text-rose-600 dark:text-rose-400 border-rose-500/30 bg-rose-500/5',
-        sentiment === 'neutral' && 'text-muted-foreground border-muted/40'
+        sentiment === 'neutral' && 'text-muted-foreground border-border'
       )}
     >
-      {sentiment === 'bullish' && <TrendingUp className="h-3 w-3" />}
-      {sentiment === 'bearish' && <TrendingDown className="h-3 w-3" />}
-      {sentiment === 'neutral' && <Minus className="h-3 w-3" />}
+      {sentiment === 'bullish' && <TrendingUp className="h-3 w-3" aria-hidden="true" />}
+      {sentiment === 'bearish' && <TrendingDown className="h-3 w-3" aria-hidden="true" />}
+      {sentiment === 'neutral' && <Minus className="h-3 w-3" aria-hidden="true" />}
       {sentiment.charAt(0).toUpperCase() + sentiment.slice(1)}
     </Badge>
   );
@@ -82,8 +82,8 @@ function SentimentChip({ sentiment }: { sentiment: MarketNewsArticle['sentiment'
 
 function ImpactMeter({ impact }: { impact: number }) {
   return (
-    <div className="flex items-center gap-2" title={`Impact score: ${impact}/100`}>
-      <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
+    <div className="flex items-center gap-2">
+      <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden" aria-hidden="true">
         <div
           className="h-full rounded-full transition-all duration-700 ease-out"
           style={{
@@ -97,7 +97,10 @@ function ImpactMeter({ impact }: { impact: number }) {
           }}
         />
       </div>
-      <span className="text-[10px] font-mono text-muted-foreground w-6 text-right">{impact}</span>
+      <span className="text-[10px] font-mono text-muted-foreground w-6 text-right">
+        <span className="sr-only">Impact score </span>
+        {impact}
+      </span>
     </div>
   );
 }
@@ -117,9 +120,8 @@ function ArticleCard({
   return (
     <article
       className={cn(
-        'group relative rounded-xl border bg-card transition-all duration-200 hover:border-primary/30 hover:shadow-lg',
-        'mobile-card premium-shadow premium-border',
-        variant === 'panel' && isFeatured && 'p-5',
+        'group relative rounded-xl border border-border/70 bg-card transition-colors hover:border-brand/40',
+        variant === 'panel' && isFeatured && 'p-4',
         variant === 'panel' && !isFeatured && 'p-3',
         variant === 'compact' && 'p-2.5',
         variant === 'symbol' && 'p-3'
@@ -138,84 +140,86 @@ function ArticleCard({
 
       <div className={cn('flex flex-col gap-2', showImage && 'relative z-10')}>
         {/* Header: source · time · category */}
-        <div className="flex items-center justify-between gap-2 text-body-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <span className="font-medium text-foreground">{article.source}</span>
             <span aria-hidden="true">·</span>
-            <span><Clock className="h-3 w-3 inline" /> {timeAgo(article.publishedAt)}</span>
+            <span className="inline-flex items-center gap-1">
+              <Clock className="h-3 w-3" aria-hidden="true" />
+              {timeAgo(article.publishedAt)}
+            </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Badge
-              variant="outline"
-              className="text-body-sm font-mono h-5 px-2 gap-1 mobile-touch-target"
-              style={{ borderColor: 'hsl(var(--border))' }}
-            >
-              {CATEGORY_ICONS[cat]}
+            <Badge variant="outline" className="h-5 gap-1 px-2 font-mono text-[10px]">
+              <span aria-hidden="true">{CATEGORY_ICONS[cat]}</span>
               {CATEGORY_LABELS[cat] ?? cat}
             </Badge>
             <ImpactMeter impact={article.impact} />
           </div>
         </div>
 
-        {/* Headline */} 
-        <a
-          href={article.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn(
-            'font-semibold leading-tight transition-colors hover:text-primary mobile-touch-target',
-            isFeatured ? 'text-h2' : 'text-h3'
-          )}
-        >
-          {article.headline}
-          <ExternalLink className="h-3.5 w-3.5 inline-block ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-        </a>
+        {/* Headline */}
+        <h3 className={cn('font-semibold leading-tight', isFeatured ? 'text-lg' : 'text-sm')}>
+          <a
+            href={article.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-start gap-1 transition-colors hover:text-brand"
+          >
+            {article.headline}
+            <ExternalLink className="mt-1 h-3.5 w-3.5 shrink-0 opacity-40" aria-hidden="true" />
+            <span className="sr-only">(opens in a new tab)</span>
+          </a>
+        </h3>
 
-        {/* Summary — panel/symbol only, truncated */} 
+        {/* Summary — panel/symbol only, truncated */}
         {(variant === 'panel' || variant === 'symbol') && (
-          <p className="text-body-sm text-muted-foreground line-clamp-2 leading-relaxed group-hover:text-foreground/80 transition-colors">
-            {article.summary}
-          </p>
+          <p className="line-clamp-2 text-body-sm leading-relaxed text-muted-foreground">{article.summary}</p>
         )}
 
-        {/* Symbol chips — visible on panel/symbol */} 
+        {/* Symbol chips — visible on panel/symbol */}
         {article.symbols.length > 0 && (variant === 'panel' || variant === 'symbol') && (
-          <div className="flex flex-wrap gap-1.5 pt-1">
+          <ul className="flex flex-wrap gap-1.5 pt-1">
             {article.symbols.slice(0, 4).map((sym) => (
-              <Badge
-                key={sym}
-                variant="secondary"
-                className="text-body-sm font-mono h-5 px-2 mobile-touch-target"
-              >
-                {sym}
-              </Badge>
+              <li key={sym}>
+                <Badge variant="secondary" className="h-5 px-2 font-mono text-[10px]">
+                  {sym}
+                </Badge>
+              </li>
             ))}
             {article.symbols.length > 4 && (
-              <Badge variant="outline" className="text-body-sm font-mono h-5 px-2 text-muted-foreground mobile-touch-target">
-                +{article.symbols.length - 4}
-              </Badge>
+              <li>
+                <Badge variant="outline" className="h-5 px-2 font-mono text-[10px] text-muted-foreground">
+                  +{article.symbols.length - 4}
+                </Badge>
+              </li>
             )}
-          </div>
+          </ul>
         )}
 
-        {/* Drivers — transparent evidence */} 
+        {/* Drivers — transparent evidence */}
         {article.drivers.length > 0 && variant !== 'compact' && (
-          <details className="group text-body-sm text-muted-foreground">
-            <summary className="flex items-center gap-1 cursor-pointer select-none py-1">
-              <span className="opacity-60 group-hover:opacity-100">Drivers:</span>
-              <ChevronRight className="h-3 w-3 transition-transform group-open:rotate-90" />
+          <details className="group text-[11px] text-muted-foreground">
+            <summary className="flex cursor-pointer select-none items-center gap-1 py-1">
+              <ChevronRight
+                className="h-3 w-3 transition-transform group-open:rotate-90 motion-reduce:transition-none"
+                aria-hidden="true"
+              />
+              <span className="opacity-70 group-hover:opacity-100">Drivers</span>
             </summary>
-            <div className="mt-1 flex flex-wrap gap-1.5">
+            <ul className="mt-1 flex flex-wrap gap-1.5">
               {article.drivers.map((d) => (
-                <Badge key={d} variant="outline" className="h-5 px-2 text-body-sm font-mono mobile-touch-target">
-                  {d}
-                </Badge>
+                <li key={d}>
+                  <Badge variant="outline" className="h-5 px-2 font-mono text-[10px]">
+                    {d}
+                  </Badge>
+                </li>
               ))}
-            </div>
+            </ul>
           </details>
         )}
 
-        {/* Sentiment chip */} 
+        {/* Sentiment chip */}
         <div className="flex items-center justify-between pt-1">
           <SentimentChip sentiment={article.sentiment} />
         </div>
@@ -275,8 +279,9 @@ export function MarketNews({
 
   if (loading && articles.length === 0) {
     return (
-      <div className={cn('panel mobile-card premium-shadow', className)}>
-        <div className="p-6 space-y-4">
+      <div className={cn('panel', className)} role="status" aria-live="polite" aria-busy="true">
+        <span className="sr-only">Loading market news</span>
+        <div className="p-6 space-y-4" aria-hidden="true">
           <div className="flex items-center justify-between">
             <div className="h-5 w-24 bg-muted animate-pulse rounded" />
             <div className="h-4 w-20 bg-muted animate-pulse rounded" />
@@ -291,18 +296,18 @@ export function MarketNews({
 
   if (error) {
     return (
-      <div className={cn('panel p-6 text-center mobile-card premium-shadow', className)}>
-        <Newspaper className="mx-auto h-10 w-10 text-muted-foreground/40 mb-2" />
-        <p className="text-body-md">{error}</p>
+      <div className={cn('panel p-6 text-center', className)}>
+        <Newspaper className="mx-auto h-10 w-10 text-muted-foreground/40 mb-2" aria-hidden="true" />
+        <p className="text-body-sm">{error}</p>
       </div>
     );
   }
 
   if (articles.length === 0) {
     return (
-      <div className={cn('panel p-6 text-center mobile-card premium-shadow', className)}>
-        <Newspaper className="mx-auto h-10 w-10 text-muted-foreground/40 mb-2" />
-        <p className="text-body-md">
+      <div className={cn('panel p-6 text-center', className)}>
+        <Newspaper className="mx-auto h-10 w-10 text-muted-foreground/40 mb-2" aria-hidden="true" />
+        <p className="text-body-sm">
           {symbol ? `No market-relevant news for ${symbol}` : 'No market-relevant stories in the feed right now'}
         </p>
         <p className="text-body-sm text-muted-foreground/70 mt-1">
@@ -313,25 +318,26 @@ export function MarketNews({
   }
 
   return (
-    <div className={cn('panel flex flex-col mobile-card premium-shadow', className)}>
+    <div className={cn('panel flex flex-col', className)}>
       {/* Header */} 
       <div className="flex items-center justify-between border-b p-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <Newspaper className="h-5 w-5" />
+          <div className="w-9 h-9 rounded-xl bg-brand/10 flex items-center justify-center text-brand">
+            <Newspaper className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
-            <h3 className="font-semibold text-h2">
-              {variant === 'symbol' && symbol ? `News for ${symbol}` : 'Market Intelligence Wire'}
-            </h3>
-            <p className="text-body-md">
-              {meta?.count ?? articles.length} stories · {meta?.sources ?? 0} sources · {meta?.feeds?.join(', ') ?? '—'}
+            <h2 className="text-h3 font-semibold">
+              {variant === 'symbol' && symbol ? `News for ${symbol}` : 'Market intelligence wire'}
+            </h2>
+            <p className="text-body-sm text-muted-foreground">
+              {meta?.count ?? articles.length} stories · {meta?.sources ?? 0} sources ·{' '}
+              {meta?.feeds?.join(', ') ?? '—'}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2 text-body-sm">
           <Badge variant="outline" className="h-5 px-2 gap-1 text-body-sm">
-            <Zap className="h-3 w-3" />
+            <Zap className="h-3 w-3" aria-hidden="true" />
             Impact-ranked
           </Badge>
         </div>

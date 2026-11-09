@@ -58,6 +58,13 @@ const config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        brand: {
+          DEFAULT: 'hsl(var(--brand) / <alpha-value>)',
+          foreground: 'hsl(var(--brand-foreground) / <alpha-value>)',
+          soft: 'hsl(var(--brand-soft) / <alpha-value>)',
+        },
+        bull: 'hsl(var(--bull) / <alpha-value>)',
+        bear: 'hsl(var(--bear) / <alpha-value>)',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -76,10 +83,36 @@ const config = {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
+        'fade-up': {
+          from: { opacity: '0', transform: 'translateY(14px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-in': {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-8px)' },
+        },
+        'pulse-ring': {
+          '0%': { transform: 'scale(0.9)', opacity: '0.7' },
+          '70%': { transform: 'scale(1.6)', opacity: '0' },
+          '100%': { transform: 'scale(1.6)', opacity: '0' },
+        },
+        marquee: {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'fade-up': 'fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'fade-in': 'fade-in 0.6s ease-out both',
+        float: 'float 7s ease-in-out infinite',
+        'pulse-ring': 'pulse-ring 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite',
+        marquee: 'marquee 38s linear infinite',
       },
     },
   },
