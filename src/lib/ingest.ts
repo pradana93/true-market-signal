@@ -8,6 +8,8 @@ export interface TrackedInstrument {
   market: MarketKey;
   provider: ProviderId;
   exchange: string;
+  /** Symbol as the feed names it, when it differs from our instrument row (e.g. BTCUSDT for BTC-USD). */
+  providerSymbol?: string;
 }
 
 // Instruments we actively track. Symbol must match the provider's convention.
@@ -44,6 +46,19 @@ function toCandles(bars: OHLCVBar[]): Candle[] {
     close: b.close,
     volume: b.volume,
   }));
+}
+
+/**
+ * Real market data never repeats the same high and low bar after bar. A series
+ * with fewer than five distinct highs is a frozen quote, a synthetic filler or
+ * a broken provider mapping — all of which would pin every ATR-derived level in
+ * the trade plan to the same number forever.
+ */
+function isDegenerateSeries(bars: OHLCVBar[]): boolean {
+  const sample = bars.slice(-50);
+  const distinctHighs = new Set(sample.map((b) => b.high)).size;
+  const distinctCloses = new Set(sample.map((b) => b.close)).size;
+  return distinctHighs < 5 || distinctCloses < 5;
 }
 
 function buildVolumeProfile(candles: Candle[], buckets = 24) {
@@ -121,19 +136,21 @@ async function ingestInstrumentInternal(
   const providers = getProviders();
   const provider = providers[inst.provider];
   const limit = tf === '1d' ? 250 : 200;
+  // The feed may name the symbol differently from our instrument row.
+  const feedSymbol = inst.providerSymbol ?? inst.symbol;
 
-  let result: ProviderResult<OHLCVBar[]> = await safeFetch(`${inst.provider}:${inst.symbol}`, () =>
-    provider.fetchCandles(inst.symbol, tf, limit)
+  let result: ProviderResult<OHLCVBar[]> = await safeFetch(`${inst.provider}:${feedSymbol}`, () =>
+    provider.fetchCandles(feedSymbol, tf, limit)
   );
 
   // Fallback to Yahoo if primary fails
   if ((!result.data || result.data.length < 30) && inst.provider !== 'yahoo') {
     const yahooProvider = providers.yahoo;
-    let yahooSymbol = inst.symbol;
-    if (inst.market === 'crypto') yahooSymbol = `${inst.symbol.replace('USDT', '')}-USD`;
-    if (inst.market === 'forex') yahooSymbol = `${inst.symbol.replace('/', '')}=X`;
-    if (inst.market === 'commodities') yahooSymbol = inst.symbol === 'XAU/USD' ? 'GC=F' : 'SI=F';
-    
+    let yahooSymbol = feedSymbol;
+    if (inst.market === 'crypto') yahooSymbol = `${feedSymbol.replace('USDT', '')}-USD`;
+    if (inst.market === 'forex') yahooSymbol = `${feedSymbol.replace('/', '')}=X`;
+    if (inst.market === 'commodities') yahooSymbol = feedSymbol === 'XAU/USD' ? 'GC=F' : 'SI=F';
+
     result = await safeFetch(`yahoo:${yahooSymbol}`, () =>
       yahooProvider.fetchCandles(yahooSymbol, tf, limit)
     );
@@ -147,6 +164,20 @@ async function ingestInstrumentInternal(
         health: 'down',
         candles: result.data?.length ?? 0,
         error: result.error ?? 'insufficient candles',
+      },
+    };
+  }
+
+  // A frozen or synthetic series produces a plan that can never move, so it is
+  // rejected before it can overwrite good candles.
+  if (isDegenerateSeries(result.data)) {
+    return {
+      outcome: {
+        symbol: inst.symbol,
+        market: inst.market,
+        health: 'down',
+        candles: result.data.length,
+        error: 'degenerate candles (flat highs/lows)',
       },
     };
   }

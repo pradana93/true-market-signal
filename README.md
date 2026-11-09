@@ -79,7 +79,21 @@ Anonymous clients may read published signals and instruments. All writes require
 | `/api/signals` | GET | Latest signals across all instruments |
 | `/api/signals/[symbol]` | GET | Signals for one instrument, `?timeframe=1h` |
 | `/api/stream` | GET | Realtime signal stream |
-| `/api/cron/[job]` | POST | Scheduled ingestion (`crypto` / `stocks` / `forex`) |
+| `/api/cron/ingest` | GET/POST | Full engine pass: refresh candles, then score every enabled instrument |
+| `/api/cron/[job]` | GET/POST | Re-score stored candles for one market (`crypto` / `stocks` / `forex`) |
+
+### Keeping signals fresh
+
+A signal can only be as new as the candles behind it, so something has to run the engine on a schedule. Two schedulers call `/api/cron/ingest` and both authenticate with a bearer token:
+
+- **Supabase `pg_cron` + `pg_net`**, every 15 minutes. The token lives in `public.app_secrets` (`cron_token`), which has RLS on and no policies, so only the service role can read it.
+- **Vercel Cron**, once a day, as a backstop. Vercel sends `Authorization: Bearer $CRON_SECRET` when that variable is set.
+
+The endpoint refuses to start a second pass within four minutes of the last stored signal, so a duplicated trigger cannot run two ingests at once. Pass `?force=1` to bypass that guard for a manual run:
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" https://your-app.vercel.app/api/cron/ingest?force=1
+```
 
 ## CI
 

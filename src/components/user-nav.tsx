@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,28 +12,31 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { User, LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import type { AuthChangeEvent, Session, User as SupabaseUser } from '@supabase/supabase-js';
 
 export function UserNav() {
   const router = useRouter();
-  const [user, setUser] = React.useState<{ id: string; email: string; user_metadata: { full_name?: string } } | null>(null);
+  const [user, setUser] = React.useState<SupabaseUser | null>(null);
   const [ready, setReady] = React.useState(false);
 
   React.useEffect(() => {
     const supabase = createClient();
     let mounted = true;
 
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(({ data }: { data: { user: SupabaseUser | null } }) => {
       if (mounted) {
         setUser(data.user);
         setReady(true);
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (mounted) setUser(session?.user ?? null);
-    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event: AuthChangeEvent, session: Session | null) => {
+        if (mounted) setUser(session?.user ?? null);
+      }
+    );
 
     return () => {
       mounted = false;
@@ -68,11 +72,11 @@ export function UserNav() {
   const initials = user.user_metadata?.full_name
     ? user.user_metadata.full_name
         .split(' ')
-        .map((n) => n[0])
+        .map((n: string) => n[0])
         .slice(0, 2)
         .join('')
         .toUpperCase()
-    : user.email.slice(0, 2).toUpperCase();
+    : (user.email ?? 'US').slice(0, 2).toUpperCase();
 
   return (
     <DropdownMenu>

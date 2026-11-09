@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AlertCircle, ArrowRight, Bell, BellOff, RefreshCw, ShieldAlert, TrendingDown, TrendingUp } from 'lucide-react';
 import { UpgradeCard } from '@/components/engagement/upgrade-card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { useSignalStream } from '@/lib/use-signal-stream';
 
 interface SignalItem {
   id: number;
@@ -34,7 +35,7 @@ export default function AlertsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -47,13 +48,14 @@ export default function AlertsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 60000);
-    return () => clearInterval(interval);
-  }, []);
+  }, [fetchData]);
+
+  // New signal rows arrive over Supabase Realtime instead of a 60s poll.
+  useSignalStream(fetchData);
 
   const latestPerInstrument = useMemo(() => {
     const latest = new Map<number, SignalItem>();

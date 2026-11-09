@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   AlertCircle,
   ArrowRight,
@@ -24,6 +24,7 @@ import { InviteCard } from '@/components/engagement/invite-card';
 import { notifyUsageChanged, recordSignalView } from '@/lib/plan-usage';
 import type { TradePlan } from '@/lib/trade-levels';
 import { cn } from '@/lib/utils';
+import { useSignalStream } from '@/lib/use-signal-stream';
 
 interface SignalItem {
   id: number;
@@ -104,7 +105,7 @@ export default function DashboardPage() {
 
   const session = getCurrentSession();
 
-  const fetchSignals = async () => {
+  const fetchSignals = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -118,13 +119,14 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchSignals();
-    const interval = setInterval(fetchSignals, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  }, [fetchSignals]);
+
+  // New signal rows arrive over Supabase Realtime instead of a 30s poll.
+  useSignalStream(fetchSignals);
 
   const filteredSignals = useMemo(() => {
     return signals.filter((signal) => {
